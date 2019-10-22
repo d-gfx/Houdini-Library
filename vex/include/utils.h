@@ -16,3 +16,11 @@ function vector calcHeatMapColor(float value_01)
 	fract = frac(value);
 	return lerp(colors[idx1], colors[idx2], fract);
 }
+
+function void calcBezierPointQuadratic(vector interp_pos, derivative_1st, derivative_2nd; float t; vector p0, p1, p2)
+{
+	float t_ = clamp(t, 0.0, 1.0);
+	interp_pos = (1-t_)*(1-t_) * p0 + 2*(1-t_)*t_ * p1 + t_*t_ * p2;
+	derivative_1st = 2*(1-t) * (p1 - p0) + 2*t*(p2 - p1);
+	derivative_2nd = 2 * (p2 - 2*p1 + p0);
+}
