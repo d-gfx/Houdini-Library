@@ -17,10 +17,52 @@ function vector calcHeatMapColor(float value_01)
 	return lerp(colors[idx1], colors[idx2], fract);
 }
 
-function void calcBezierPointQuadratic(vector interp_pos, derivative_1st, derivative_2nd; float t; vector p0, p1, p2)
+/**
+ *	Quadratic Bezier Curve	
+ */
+function vector bezierQuadratic_Position(float t_01; vector p0, p1, p2)
 {
-	float t_ = clamp(t, 0.0, 1.0);
-	interp_pos = (1-t_)*(1-t_) * p0 + 2*(1-t_)*t_ * p1 + t_*t_ * p2;
-	derivative_1st = 2*(1-t) * (p1 - p0) + 2*t*(p2 - p1);
-	derivative_2nd = 2 * (p2 - 2*p1 + p0);
+	float t = clamp(t_01, 0.0, 1.0);
+	return (1-t)*(1-t) * p0 + 2*(1-t)*t * p1 + t*t * p2;
+}
+
+function vector bezierQuadratic_Derivative_1st(float t_01; vector p0, p1, p2)
+{
+	float t = clamp(t_01, 0.0, 1.0);
+	return 2*(1-t) * (p1 - p0) + 2*t*(p2 - p1);
+}
+
+function vector bezierQuadratic_Derivative_2nd(float t_01; vector p0, p1, p2)
+{
+	float t = clamp(t_01, 0.0, 1.0);
+	return 2 * (p2 - 2*p1 + p0);
+}
+
+/**
+ *	Cubic Bezier Curve
+ */
+function vector bezierCubic_Position(float t_01; vector p0, p1, p2, p3)
+{
+	float t = clamp(t_01, 0.0, 1.0);
+	#if 0
+	return (1 - t) * bezierQuadratic_Position(t, p0, p1, p2) + t * bezierQuadratic_Position(t, p1, p2, p3);
+	#else
+	// explicit form
+	float rev_t = clamp(1.0 - t, 0.0, 1.0);
+	return rev_t*rev_t*rev_t * p0 + 3*rev_t*rev_t*t * p1 + 3*rev_t*t*t * p2 + t*t*t * p3;
+	#endif
+}
+
+function vector bezierCubic_Derivative_1st(float t_01; vector p0, p1, p2, p3)
+{
+	float t = clamp(t_01, 0.0, 1.0);
+	float rev_t = clamp(1.0 - t, 0.0, 1.0);
+	return 3*rev_t*rev_t * (p1 - p0) + 6*rev_t*t * (p2 - p1) + 3*t*t * (p3-p2);
+}
+
+function vector bezierCubic_Derivative_2nd(float t_01; vector p0, p1, p2, p3)
+{
+	float t = clamp(t_01, 0.0, 1.0);
+	float rev_t = clamp(1.0 - t, 0.0, 1.0);
+	return 6*rev_t * (p2 - 2*p1 + p0) + 6*t * (p3 - 2*p2 + p1);
 }
