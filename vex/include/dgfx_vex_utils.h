@@ -66,3 +66,16 @@ function vector bezierCubic_Derivative_2nd(float t_01; vector p0, p1, p2, p3)
 	float rev_t = clamp(1.0 - t, 0.0, 1.0);
 	return 6*rev_t * (p2 - 2*p1 + p0) + 6*t * (p3 - 2*p2 + p1);
 }
+
+/**
+ *	is Primitive Vertex Looped ?
+ */
+function int isLooped_PrimVertex(int geometry, prim_num)
+{
+	int num_vtx = primvertexcount(geometry, prim_num);
+	int src_vtx_1st = primvertex(geometry, prim_num, 0);
+	int src_vtx_end = primvertex(geometry, prim_num, num_vtx-1);
+	int src_pt_1st = vertexpoint(geometry, src_vtx_1st);
+	int src_pt_end = vertexpoint(geometry, src_vtx_end);
+	return (src_pt_1st == src_pt_end);
+}
