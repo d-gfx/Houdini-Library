@@ -106,12 +106,12 @@ function void append_PolyLine_from_Points(vector pts[]; int is_prim_looped)
 /**
  *	append mid point to edges to create rounded corner
  */
-function void append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, num_vtx, is_prim_looped, order; float bevel_rate)
+function void append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, num_vtx, is_prim_looped, order; float round_rate)
 {
 	int num_pt = (is_prim_looped) ? num_vtx-1 : num_vtx;
 	int num_corner = (is_prim_looped) ? num_pt : num_pt-2;
-	float bevel_01 = (order == 3) ? 0.0 : clamp(bevel_rate, 0, 1);
-	float bevel = bevel_01 * 0.5;
+	float round_01 = (order == 3) ? 0.0 : clamp(round_rate, 0, 1);
+	float round = round_01 * 0.5;
 	int div_num = order-1;
 	int is_exist_corner_vtx = ((order % 2) == 1);
 	float branch_index = float(div_num)/2.0;
@@ -122,7 +122,7 @@ function void append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, n
 		start_j_2nd++;
 		end_j_1st--;
 	}
-//	printf("num_vtx = %d, order = %d, num_corner = %d, bevel_01 = %f\n", num_vtx, order, num_corner, bevel_01);
+//	printf("num_vtx = %d, order = %d, num_corner = %d, round_01 = %f\n", num_vtx, order, num_corner, round_01);
 //	printf("branch_index = %d, end_j_1st = %d, start_j_2nd = %d, div_num = %d, is_prim_looped = %d\n", branch_index, end_j_1st, start_j_2nd, div_num, is_prim_looped);
 	for (int i=0; i<num_corner; ++i)
 	{
@@ -164,7 +164,7 @@ function void append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, n
 			{
 				pos_s = pos_0; pos_e = pos_1;
 				rate = clamp(float(j) / end_j_1st, 0.0, 1.0);
-				rate = fit(rate, 0.0, 1.0, 0.5, 0.5 + 0.5 * (1.0-bevel_01));
+				rate = fit(rate, 0.0, 1.0, 0.5, 0.5 + 0.5 * (1.0-round_01));
 			//	printf("02 : [%d - %d]rate = %f j = %d\n", pt_0, pt_1, rate, j);
 			}
 			else if (j == branch_index) // just corner vertex
@@ -177,7 +177,7 @@ function void append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, n
 			{
 				pos_s = pos_1; pos_e = pos_2;
 				rate = clamp((float(j - start_j_2nd) / (div_num - start_j_2nd)), 0.0, 1.0);
-				rate = fit(rate, 0.0, 1.0, 0.5*bevel_01, 0.5);
+				rate = fit(rate, 0.0, 1.0, 0.5*round_01, 0.5);
 			//	printf("04 : [%d - %d]rate = %f j = %d\n", pt_1, pt_2, rate, j);
 			}
 			vector append_pos = lerp(pos_s, pos_e, rate);
