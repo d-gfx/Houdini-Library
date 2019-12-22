@@ -4,8 +4,14 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
+#ifndef dgfx_vex_utils_h
+#define dgfx_vex_utils_h
 
-function vector calc_HeatMap_Color(float value_01)
+#define mod(a, b)		((a) % (b))
+#define mix(a, b, t)	lerp((a), (b), (t))
+#define clamp01(v)		clamp(v, 0.0, 1.0)
+
+function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
 	vector colors[] = array({0,0,1}, {0,1,0}, {1,1,0}, {1,0,0}); // enable to add color table.
 	int num_colors = len(colors);
@@ -20,19 +26,19 @@ function vector calc_HeatMap_Color(float value_01)
 /**
  *	Quadratic Bezier Curve	
  */
-function vector bezierQuadratic_Position(float t_01; vector p0, p1, p2)
+function vector dgfx_BezierQuadratic_Position(float t_01; vector p0, p1, p2)
 {
 	float t = clamp(t_01, 0.0, 1.0);
 	return (1-t)*(1-t) * p0 + 2*(1-t)*t * p1 + t*t * p2;
 }
 
-function vector bezierQuadratic_Derivative_1st(float t_01; vector p0, p1, p2)
+function vector dgfx_BezierQuadratic_Derivative_1st(float t_01; vector p0, p1, p2)
 {
 	float t = clamp(t_01, 0.0, 1.0);
 	return 2*(1-t) * (p1 - p0) + 2*t*(p2 - p1);
 }
 
-function vector bezierQuadratic_Derivative_2nd(float t_01; vector p0, p1, p2)
+function vector dgfx_BezierQuadratic_Derivative_2nd(float t_01; vector p0, p1, p2)
 {
 	float t = clamp(t_01, 0.0, 1.0);
 	return 2 * (p2 - 2*p1 + p0);
@@ -41,7 +47,7 @@ function vector bezierQuadratic_Derivative_2nd(float t_01; vector p0, p1, p2)
 /**
  *	Cubic Bezier Curve
  */
-function vector bezierCubic_Position(float t_01; vector p0, p1, p2, p3)
+function vector dgfx_BezierCubic_Position(float t_01; vector p0, p1, p2, p3)
 {
 	float t = clamp(t_01, 0.0, 1.0);
 	#if 0
@@ -53,14 +59,14 @@ function vector bezierCubic_Position(float t_01; vector p0, p1, p2, p3)
 	#endif
 }
 
-function vector bezierCubic_Derivative_1st(float t_01; vector p0, p1, p2, p3)
+function vector dgfx_BezierCubic_Derivative_1st(float t_01; vector p0, p1, p2, p3)
 {
 	float t = clamp(t_01, 0.0, 1.0);
 	float rev_t = clamp(1.0 - t, 0.0, 1.0);
 	return 3*rev_t*rev_t * (p1 - p0) + 6*rev_t*t * (p2 - p1) + 3*t*t * (p3-p2);
 }
 
-function vector bezierCubic_Derivative_2nd(float t_01; vector p0, p1, p2, p3)
+function vector dgfx_BezierCubic_Derivative_2nd(float t_01; vector p0, p1, p2, p3)
 {
 	float t = clamp(t_01, 0.0, 1.0);
 	float rev_t = clamp(1.0 - t, 0.0, 1.0);
@@ -70,7 +76,7 @@ function vector bezierCubic_Derivative_2nd(float t_01; vector p0, p1, p2, p3)
 /**
  *	is Primitive Vertex Looped ?
  */
-function int isLooped_PrimVertex(int geometry, prim_num)
+function int dgfx_IsLooped_PrimVertex(int geometry, prim_num)
 {
 	int num_vtx = primvertexcount(geometry, prim_num);
 	int src_vtx_1st = primvertex(geometry, prim_num, 0);
@@ -83,7 +89,7 @@ function int isLooped_PrimVertex(int geometry, prim_num)
 /**
  *	append polyline from array of point number
  */
-function void append_PolyLine_from_Points(vector pts[]; int is_prim_looped)
+function void dgfx_Append_PolyLine_from_Points(vector pts[]; int is_prim_looped)
 {
 	int num_pt = len(pts);
 	int prim = addprim(0, "polyline");
@@ -106,7 +112,7 @@ function void append_PolyLine_from_Points(vector pts[]; int is_prim_looped)
 /**
  *	append mid point to edges to create rounded corner
  */
-function void append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, num_vtx, is_prim_looped, order; float round_rate)
+function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, num_vtx, is_prim_looped, order; float round_rate)
 {
 	int num_pt = (is_prim_looped) ? num_vtx-1 : num_vtx;
 	int num_corner = (is_prim_looped) ? num_pt : num_pt-2;
@@ -198,3 +204,18 @@ function void append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_prim, n
 		}
 	}
 }
+
+/**
+ *	Controlable Smooth Step
+ */
+function float dgfx_SmoothStep(const float x, edge, ofs)
+{
+	float edge_ = clamp01(edge - 0.5);
+	float rate  = clamp01(edge * 2.0);
+	// smooth step
+	float edge0 = clamp01(edge_+ofs), edge1 = clamp01(1 - edge_+ofs);
+	float t = clamp01((x - edge0)/(edge1 - edge0));
+	float smoothstep = t * t * (3 - 2*t);
+	return lerp(x, smoothstep, rate);
+}
+#endif // dgfx_vex_utils_h
