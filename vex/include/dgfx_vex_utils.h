@@ -214,8 +214,7 @@ function float dgfx_SmoothStep(const float x, edge, ofs)
 	float rate  = clamp01(edge * 2.0);
 	// smooth step
 	float edge0 = clamp01(edge_+ofs), edge1 = clamp01(1 - edge_+ofs);
-	float t = clamp01((x - edge0)/(edge1 - edge0));
-	float smoothstep = t * t * (3 - 2*t);
+	float smoothstep = smooth(edge0, edge1, x);
 	return lerp(x, smoothstep, rate);
 }
 #endif // dgfx_vex_utils_h
