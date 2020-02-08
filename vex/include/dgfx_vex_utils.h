@@ -7,9 +7,10 @@
 #ifndef dgfx_vex_utils_h
 #define dgfx_vex_utils_h
 
-#define mod(a, b)		((a) % (b))
-#define mix(a, b, t)	lerp((a), (b), (t))
-#define clamp01(v)		clamp(v, 0.0, 1.0)
+#define mod(a, b)			((a) % (b))
+#define mix(a, b, t)		lerp((a), (b), (t))
+#define clamp01(v)			clamp(v, 0.0, 1.0)
+#define vector4_ctor(v, f)	(set((v).x, (v).y, (v).z, f))
 
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
