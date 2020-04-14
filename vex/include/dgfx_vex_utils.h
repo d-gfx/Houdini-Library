@@ -218,4 +218,22 @@ function float dgfx_SmoothStep(const float x, edge, ofs)
 	float smoothstep = smooth(edge0, edge1, x);
 	return lerp(x, smoothstep, rate);
 }
+
+/**
+ *	Count Edges (not half edges)
+ *	from https://www.sidefx.com/docs/houdini/vex/functions/pointhedgenext.html
+ */
+function int dgfx_CountEdges(int geo, pt)
+{
+    int edge_count = 0;
+    int hout = pointhedge(geo, pt);
+    while ( hout != -1 )
+    {
+        if (hedge_isprimary(geo, hout))	{ edge_count++; }
+        int hin = hedge_prev(geo, hout);
+        if (hedge_isprimary(geo, hin))	{ edge_count++; }
+        hout = pointhedgenext(geo, hout);
+    }
+    return edge_count;
+}
 #endif // dgfx_vex_utils_h
