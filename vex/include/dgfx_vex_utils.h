@@ -236,4 +236,22 @@ function int dgfx_CountEdges(int geo, pt)
     }
     return edge_count;
 }
+
+/**
+ *	Make 3D Shear Matrix
+ *	ref https://www.sidefx.com/docs/houdini/vex/functions/maketransform.html
+ */
+function matrix dgfx_MakeShearMatrix(const vector shear)
+{
+	vector zero = set(0,0,0);
+	vector ones = set(1,1,1);
+	vector t = zero;
+	vector r = zero;
+	vector s = ones;
+	vector p = zero;
+	vector pr = zero;
+	matrix shear_mtx = maketransform(XFORM_SRT, XFORM_XYZ, t, r, s, p, pr, shear);
+	return shear_mtx;
+}
+
 #endif // dgfx_vex_utils_h
