@@ -254,4 +254,25 @@ function matrix dgfx_MakeShearMatrix(const vector shear)
 	return shear_mtx;
 }
 
+/**
+ *	Calc Color Palette
+ *	from http://iquilezles.org/www/articles/palettes/palettes.htm
+ */
+function vector dgfx_ColorPalette(float t; vector a, b, c, d)
+{
+	vector color = a + b * cos(6.28318 * (c * t + d));
+	return color;
+}
+
+/**
+ *	Rainbow Color Palette
+ */
+function vector dgfx_ColorPaletteRainbow(float t)
+{
+	vector a = set(0.5, 0.5, 0.5);
+	vector b = set(0.5, 0.5, 0.5);
+	vector c = set(1, 1, 1);
+	vector d = set(0.0, 0.33, 0.67);
+	return dgfx_ColorPalette(t, a, b, c, d);
+}
 #endif // dgfx_vex_utils_h
