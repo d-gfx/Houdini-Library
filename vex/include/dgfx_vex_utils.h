@@ -275,4 +275,15 @@ function vector dgfx_ColorPaletteRainbow(float t)
 	vector d = set(0.0, 0.33, 0.67);
 	return dgfx_ColorPalette(t, a, b, c, d);
 }
+
+/**
+ *	Break Matrix Component
+ */
+function void dgfx_BreakMatrix(vector A_col_0, A_col_1, A_col_2; const matrix3 A)
+{
+	assign(A_col_0.x, A_col_0.y, A_col_0.z
+		 , A_col_1.x, A_col_1.y, A_col_1.z
+		 , A_col_2.x, A_col_2.y, A_col_2.z
+		 , A);
+}
 #endif // dgfx_vex_utils_h
