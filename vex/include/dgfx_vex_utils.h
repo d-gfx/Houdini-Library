@@ -12,6 +12,9 @@
 #define clamp01(v)			clamp(v, 0.0, 1.0)
 #define vector4_ctor(v, f)	(set((v).x, (v).y, (v).z, f))
 
+// repeat(4, 0, 4) => 0
+#define repeat(value, min, max) (((max-min) <= 0) ? min : mod(value-min, max-min) + min)
+
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
 	vector colors[] = array({0,0,1}, {0,1,0}, {1,1,0}, {1,0,0}); // enable to add color table.
@@ -75,10 +78,29 @@ function vector dgfx_BezierCubic_Derivative_2nd(float t_01; vector p0, p1, p2, p
 }
 
 /**
+ *	Calc Circle Center Position
+ */
+function void dgfx_Calc_Circumscribed_Circle(float ret_r; vector ret_center, ret_plane_nrm; const vector a, b, c)
+{
+	vector ac = c - a;
+	vector ab = b - a;
+	vector ab_x_ac = cross(ab, ac);
+	vector a_center = (cross(ab_x_ac, ab) * length2(ac) + cross(ac, ab_x_ac) * length2(ab)) / (2.0 * length2(ab_x_ac));
+
+	float radius = length(a_center);
+	vector center = a + a_center;
+
+	ret_r = radius;
+	ret_center = center;
+	ret_plane_nrm = normalize(ab_x_ac);
+}
+
+/**
  *	is Primitive Vertex Looped ?
  */
 function int dgfx_IsLooped_PrimVertex(int geometry, prim_num)
 {
+//	int is_closed = primintrinsic(geometry, "closed", prim_num); // this is whether open or closed prim
 	int num_vtx = primvertexcount(geometry, prim_num);
 	int src_vtx_1st = primvertex(geometry, prim_num, 0);
 	int src_vtx_end = primvertex(geometry, prim_num, num_vtx-1);
@@ -286,4 +308,15 @@ function void dgfx_BreakMatrix(vector A_col_0, A_col_1, A_col_2; const matrix3 A
 		 , A_col_2.x, A_col_2.y, A_col_2.z
 		 , A);
 }
+
+/**
+ *	Project vector to plane
+ */
+function vector dgfx_Proj_to_Plane(const vector src, plane_nrm)
+{
+    vector delete_dir_nrm = normalize(plane_nrm);
+    float elem_dot = dot(src, delete_dir_nrm);
+    return src - elem_dot*delete_dir_nrm;
+}
+
 #endif // dgfx_vex_utils_h
