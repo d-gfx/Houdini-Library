@@ -319,4 +319,20 @@ function vector dgfx_Proj_to_Plane(const vector src, plane_nrm)
     return src - elem_dot*delete_dir_nrm;
 }
 
+/**
+ *	OpenGL Projection Matrix
+ */
+function matrix dgfx_Calc_Projection_Mtx_GL(const float fovy, near, far, h_div_w)
+{
+	float e = 1.0/tan(fovy/2.0);
+	float a = h_div_w;
+	float inv_fn = 1.0/(far - near);
+	matrix proj_mtx = set(e,   0,				 0,					  0,
+						  0, e/a,				 0,					  0,
+						  0,   0,-(far+near)*inv_fn, -2*far*near*inv_fn,
+						  0,   0,				-1,					  0);
+	proj_mtx = transpose(proj_mtx);
+	return proj_mtx;
+}
+
 #endif // dgfx_vex_utils_h
