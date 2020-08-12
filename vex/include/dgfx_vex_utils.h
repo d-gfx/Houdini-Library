@@ -14,6 +14,8 @@
 
 // repeat(4, 0, 4) => 0
 #define repeat(value, min, max) (((max-min) <= 0) ? min : mod(value-min, max-min) + min)
+#define log2(value)	(log(value)/log(2.0))
+
 
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
@@ -335,4 +337,30 @@ function matrix dgfx_Calc_Projection_Mtx_GL(const float fovy, near, far, h_div_w
 	return proj_mtx;
 }
 
+/**
+ *	Get Local Box Points
+ */
+function void dgfx_Calc_Local_Box_Points(vector points[])
+{
+	append(points, set(-1, -1, -1));
+	append(points, set( 1, -1, -1));
+	append(points, set( 1,  1, -1));
+	append(points, set(-1,  1, -1));
+	append(points, set(-1, -1,  1));
+	append(points, set( 1, -1,  1));
+	append(points, set( 1,  1,  1));
+	append(points, set(-1,  1,  1));
+}
+
+/**
+ *	Apply Transform using Perspective Divide
+ *	World <--> NDC
+ */
+function vector dgfx_Transform_Projection(const vector P; const matrix A, B)
+{
+    vector4 vec4_P = vector4_ctor(P, 1);
+    vector4 proj_P = vec4_P * A * B;
+    float w = proj_P.w;
+    return set(proj_P.x/w, proj_P.y/w, proj_P.z/w);
+}
 #endif // dgfx_vex_utils_h
