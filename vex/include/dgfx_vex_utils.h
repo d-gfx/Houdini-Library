@@ -14,8 +14,9 @@
 
 // repeat(4, 0, 4) => 0
 #define repeat(value, min, max) (((max-min) <= 0) ? min : mod(value-min, max-min) + min)
-#define log2(value)	(log(value)/log(2.0))
-
+#define log_base(value, base)	(log(value)/log(base))
+#define log2(value)	(log_base(value, 2.0))
+#define exp2(value) (pow(2.0, value))
 
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
