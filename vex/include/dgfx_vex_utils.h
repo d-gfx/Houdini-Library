@@ -18,6 +18,62 @@
 #define log2(value)	(log_base(value, 2.0))
 #define exp2(value) (pow(2.0, value))
 
+/**
+ *	Array Intersection
+ */
+#define ArrayIntersection(out_array, array_a, array_b)	\
+{\
+	for (int i=0; i<len(array_a); ++i)\
+	{\
+		if (0 <= find(array_b, array_a[i]))\
+			append(out_array, array_a[i]);\
+	}\
+}
+
+function int[] dgfx_Array_Intersection(const int a[], b[]) { int ret[]; ArrayIntersection(ret, a, b); return ret; }
+function float[] dgfx_Array_Intersection(const float a[], b[]) { float ret[]; ArrayIntersection(ret, a, b); return ret; }
+function vector[] dgfx_Array_Intersection(const vector a[], b[]) { vector ret[]; ArrayIntersection(ret, a, b); return ret; }
+
+/**
+ *	Calc Vector Angle (radian)
+ */
+function float dgfx_Calc_Vector_Radian(const vector vec1, vec2)
+{
+	vector dir1 = normalize(vec1);
+	vector dir2 = normalize(vec2);
+	return qdistance(dihedral(dir1, dir2), {0,0,0,1});
+}
+
+/**
+ *	Vector Projection
+ */
+function float dgfx_Vector_Extract_Vertical(vector tgt; const vector dir)
+{
+	vector nrm = normalize(dir);
+	float d = dot(tgt, nrm);
+	tgt = tgt - d*nrm;
+	return d/length(dir);
+}
+function float dgfx_Vector_Extract_Parallel(vector tgt; const vector dir)
+{
+	vector nrm = normalize(dir);
+	float d = dot(tgt, nrm);
+	tgt = d*nrm;
+	return d/length(dir);
+}
+
+function float dgfx_Calc_Perpendicular_Foot(vector ret; const vector pos, edge_begin, edge_end)
+{
+	vector edge_vec = edge_end - edge_begin;
+	vector begin_to_pos = pos - edge_begin;
+	float d = dgfx_Vector_Extract_Parallel(begin_to_pos, edge_vec);
+	ret = edge_begin + begin_to_pos;
+	return d;
+}
+
+/**
+ *	Normalized Value to Color
+ */
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
 	vector colors[] = array({0,0,1}, {0,1,0}, {1,1,0}, {1,0,0}); // enable to add color table.
