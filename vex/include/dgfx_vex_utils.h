@@ -10,7 +10,9 @@
 #define mod(a, b)			((a) % (b))
 #define mix(a, b, t)		lerp((a), (b), (t))
 #define clamp01(v)			clamp(v, 0.0, 1.0)
+#define vector3_ctor(v, f)	(set((v).x, (v).y, f))
 #define vector4_ctor(v, f)	(set((v).x, (v).y, (v).z, f))
+#define swap(type, a, b)			{ type __tmp = a; a = b; b = __tmp; }
 
 // repeat(4, 0, 4) => 0
 #define repeat(value, min, max) (((max-min) <= 0) ? min : mod(value-min, max-min) + min)
@@ -33,6 +35,24 @@
 function int[] dgfx_Array_Intersection(const int a[], b[]) { int ret[]; ArrayIntersection(ret, a, b); return ret; }
 function float[] dgfx_Array_Intersection(const float a[], b[]) { float ret[]; ArrayIntersection(ret, a, b); return ret; }
 function vector[] dgfx_Array_Intersection(const vector a[], b[]) { vector ret[]; ArrayIntersection(ret, a, b); return ret; }
+
+/**
+ *	Shuffle Array (in place)
+ */
+#define ArrayShuffle(type, inout_array, seed_01)	\
+{\
+	int size = len(inout_array);\
+	for (int i=size-1; 1<=i; --i)\
+	{\
+		float rnd = rand(seed_01);\
+		int j = int(rint(rnd * i));\
+		swap(type, inout_array[i], inout_array[j]);\
+	}\
+}
+
+function void dgfx_Array_Shuffle(int arr[]; float seed_01) { ArrayShuffle(int, arr, seed_01); }
+function void dgfx_Array_Shuffle(float arr[]; float seed_01) { ArrayShuffle(float, arr, seed_01); }
+function void dgfx_Array_Shuffle(vector arr[]; float seed_01) { ArrayShuffle(vector, arr, seed_01); }
 
 /**
  *	Calc Vector Angle (radian)
