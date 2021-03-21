@@ -19,6 +19,18 @@
 #define log_base(value, base)	(log(value)/log(base))
 #define log2(value)	(log_base(value, 2.0))
 #define exp2(value) (pow(2.0, value))
+#define factorial(n)	(dgfx_Calc_Factorial(n))
+
+/**
+ *	calc factorial
+ *	ex: 3! = 3*2*1
+ */
+function int dgfx_Calc_Factorial(const int n)
+{
+    int ret = 1;
+    for (int i=2; i<=n; ++i) { ret *= i; }
+    return ret;
+}
 
 /**
  *	Array Intersection
@@ -89,6 +101,34 @@ function float dgfx_Calc_Perpendicular_Foot(vector ret; const vector pos, edge_b
 	float d = dgfx_Vector_Extract_Parallel(begin_to_pos, edge_vec);
 	ret = edge_begin + begin_to_pos;
 	return d;
+}
+
+/**
+ *	Calc orient (Quaternion) from Two Vectors
+ */
+function vector4 dgfx_Calc_Orient_Front_Side(const vector front, side)
+{
+	vector _up = normalize(cross(front, side));
+	vector _side = normalize(cross(_up, front));
+	matrix3 mtx = set(_side, _up, front);
+	return normalize(quaternion(mtx));
+}
+
+/**
+ *	Create Axis Geometry (for Visualize)
+ */
+function void dgfx_Create_Axis_Geomety(const float axis_len)
+{
+	int pt_orig = addpoint(0, {0,0,0});
+	int pt_x = addpoint(0, set(axis_len,0,0));
+	int pt_y = addpoint(0, set(0,axis_len,0));
+	int pt_z = addpoint(0, set(0,0,axis_len));
+	int prim_x = addprim(0, "polyline", pt_orig, pt_x);
+	int prim_y = addprim(0, "polyline", pt_orig, pt_y);
+	int prim_z = addprim(0, "polyline", pt_orig, pt_z);
+	setprimattrib(0, "Cd", prim_x, {1,0,0});
+	setprimattrib(0, "Cd", prim_y, {0,1,0});
+	setprimattrib(0, "Cd", prim_z, {0,0,1});
 }
 
 /**
