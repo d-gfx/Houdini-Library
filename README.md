@@ -2,6 +2,6 @@
 HDA and VEX Library.
 
 # License
-Copyright (c) 2019 d-gfx
+Copyright (c) 2019-2021 d-gfx
 
 MIT License, see LICENSE for further details.
