@@ -12,14 +12,15 @@
 #define clamp01(v)			clamp(v, 0.0, 1.0)
 #define vector3_ctor(v, f)	(set((v).x, (v).y, f))
 #define vector4_ctor(v, f)	(set((v).x, (v).y, (v).z, f))
-#define swap(type, a, b)			{ type __tmp = a; a = b; b = __tmp; }
+#define swap(type, a, b)	{ type __tmp = a; a = b; b = __tmp; }
+#define sqr(x)				((x)*(x))
 
 // repeat(4, 0, 4) => 0
 #define repeat(value, min, max) (((max-min) <= 0) ? min : mod(value-min, max-min) + min)
 #define log_base(value, base)	(log(value)/log(base))
-#define log2(value)	(log_base(value, 2.0))
-#define exp2(value) (pow(2.0, value))
-#define factorial(n)	(dgfx_Calc_Factorial(n))
+#define log2(value)				(log_base(value, 2.0))
+#define exp2(value)				(pow(2.0, value))
+#define factorial(n)			(dgfx_Calc_Factorial(n))
 
 /**
  *	calc factorial
