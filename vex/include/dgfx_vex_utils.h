@@ -22,6 +22,10 @@
 #define exp2(value)				(pow(2.0, value))
 #define factorial(n)			(dgfx_Calc_Factorial(n))
 
+#define pass_through(src, dst, row, col)	setcomp(dst, getcomp(src, row, col), row, col)
+#define GET(A, r, c)        getcomp(A, r, c)
+#define SET(A, r, c, value) setcomp(A, value, r, c)
+
 /**
  *	calc factorial
  *	ex: 3! = 3*2*1
@@ -45,9 +49,50 @@ function int dgfx_Calc_Factorial(const int n)
 	}\
 }
 
-function int[] dgfx_Array_Intersection(const int a[], b[]) { int ret[]; ArrayIntersection(ret, a, b); return ret; }
-function float[] dgfx_Array_Intersection(const float a[], b[]) { float ret[]; ArrayIntersection(ret, a, b); return ret; }
+function int[]    dgfx_Array_Intersection(const int a[], b[])    { int ret[];    ArrayIntersection(ret, a, b); return ret; }
+function float[]  dgfx_Array_Intersection(const float a[], b[])  { float ret[];  ArrayIntersection(ret, a, b); return ret; }
 function vector[] dgfx_Array_Intersection(const vector a[], b[]) { vector ret[]; ArrayIntersection(ret, a, b); return ret; }
+
+/**
+ * Array Slice
+ * Ex: int nums[] = { 0, 1, 2, 3, 4, 5 };
+ * dgfx_Array_Slice(nums, -2, 9) := {4, 5, 0, 1, 2}
+ * dgfx_Array_Slice(nums, -2, 10) := {}
+ */
+#define ArraySlice(out_array, in_array, start, end)	\
+{\
+    int num = len(in_array);\
+    int s = start % num;\
+    int e = end % num;\
+    for (int i=s; i!=e; i = (i+1)%num)\
+    {\
+        append(out_array, in_array[i]);\
+    }\
+}
+
+function int[]    dgfx_Array_Slice(const int arr[];    const int start, end) { int ret[];    ArraySlice(ret, arr, start, end); return ret; }
+function float[]  dgfx_Array_Slice(const float arr[];  const int start, end) { float ret[];  ArraySlice(ret, arr, start, end); return ret; }
+function vector[] dgfx_Array_Slice(const vector arr[]; const int start, end) { vector ret[]; ArraySlice(ret, arr, start, end); return ret; }
+
+/**
+ * Array Repeatable Slice
+ * Ex: int nums[] = { 0, 1, 2, 3, 4, 5 };
+ * dgfx_Array_Slice_Repeatable(nums, -2, 9) := {4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2}
+ * dgfx_Array_Slice_Repeatable(nums, -2, 10) := {4, 5, 0, 1, 2, 3, 4, 5, 0, 1, 2, 3}
+ */
+#define ArraySliceRepeatable(out_array, in_array, start, end)	\
+{\
+    int num = len(in_array);\
+	int step = (start < end) ? 1 : -1;\
+    for (int i=start; i!=end; i += step)\
+    {\
+        append(out_array, in_array[i%num]);\
+    }\
+}
+
+function int[]    dgfx_Array_Slice_Repeatable(const int arr[];    const int start, end) { int ret[];    ArraySliceRepeatable(ret, arr, start, end); return ret; }
+function float[]  dgfx_Array_Slice_Repeatable(const float arr[];  const int start, end) { float ret[];  ArraySliceRepeatable(ret, arr, start, end); return ret; }
+function vector[] dgfx_Array_Slice_Repeatable(const vector arr[]; const int start, end) { vector ret[]; ArraySliceRepeatable(ret, arr, start, end); return ret; }
 
 /**
  *	Shuffle Array (in place)
@@ -63,8 +108,8 @@ function vector[] dgfx_Array_Intersection(const vector a[], b[]) { vector ret[];
 	}\
 }
 
-function void dgfx_Array_Shuffle(int arr[]; float seed_01) { ArrayShuffle(int, arr, seed_01); }
-function void dgfx_Array_Shuffle(float arr[]; float seed_01) { ArrayShuffle(float, arr, seed_01); }
+function void dgfx_Array_Shuffle(int arr[];    float seed_01) { ArrayShuffle(int, arr, seed_01); }
+function void dgfx_Array_Shuffle(float arr[];  float seed_01) { ArrayShuffle(float, arr, seed_01); }
 function void dgfx_Array_Shuffle(vector arr[]; float seed_01) { ArrayShuffle(vector, arr, seed_01); }
 
 /**
@@ -349,6 +394,111 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
 }
 
 /**
+ *	PolyCut 2.0
+ *	restriction :
+ * 		triangles or quads only
+ *		float attribute only
+ *	How to Use :
+ *		in Primitive Wrangle
+ *		dgfx_PolyCut2(0, @primnum, @P, "dist", cut_dist);
+ *
+ *	Known Issue
+ *	cut_value := 0.5
+ *	 1.0 *----* 0.0
+ *       |    |
+ *   0.0 *----* 1.0
+ */
+function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string attr_name; const float cut_value)
+{
+	#define polycut_store(prim0, prim1, pt, cur_prim)	{ if (cur_prim == 0) { append(prim0, pt); } else { append(prim1, pt); } }
+
+	int pts[] = primpoints(0, primnum);
+	int diag_pts[] = pts;
+	if (len(pts) != 4) { return; }
+	float cut_dist = chf("cut_distance");
+	int numpt = len(pts);
+	// Dividing into two fragmented groups
+	// If the original is a quadrilateral, then it is either a quadrilateral x 2 or a triangle + quadrilateral
+	int prim0[]; int prim1[]; int edge[];
+	int cur_prim = 0;
+	vector sum_edge_P = set(0);
+	float rate_max = 0;
+	// iterates all Points and looking at the Edges
+	for(int i=0; i<numpt; ++i)
+	{
+		int e_pts[] = array(pts[i], pts[(i+1)%numpt]);
+		polycut_store(prim0, prim1, e_pts[0], cur_prim);
+		float attr_i = point(geo, attr_name, e_pts[0]);
+		float attr_j = point(geo, attr_name, e_pts[1]);
+		float e_attr[] = array(attr_i, attr_j);
+		vector ei_P = point(geo, "P", e_pts[0]);
+		vector ej_P = point(geo, "P", e_pts[1]);
+		vector e_P[] = array(ei_P, ej_P);
+		// sort
+		int indices[] = argsort(e_attr);
+		e_pts  = reorder(e_pts, indices);
+		e_attr = reorder(e_attr, indices);
+		e_P    = reorder(e_P, indices);
+		// cut position found
+		if (e_attr[0] < cut_dist && cut_dist < e_attr[1])
+		{
+			// If you delete a Point that is involved, it will either disappear altogether or leave only one Point that is not involved at all.
+			removevalue(diag_pts, e_pts[0]);
+			removevalue(diag_pts, e_pts[1]);
+			// Calculate the mixing rate at the cut position
+			float rate = invlerp(cut_dist, e_attr[0], e_attr[1]);
+			// Find the rate to use to determine the position of the branch Point
+			rate_max = max(rate_max, rate);
+			vector cut_P = lerp(e_P[0], e_P[1], rate);
+			sum_edge_P += cut_P;
+			int add_pt1 = addpoint(0, cut_P);
+			setpointattrib(0, attr_name, add_pt1, cut_dist);
+			polycut_store(prim0, prim1, add_pt1, cur_prim);
+			append(edge, add_pt1);
+			cur_prim = 1 - cur_prim;
+			polycut_store(prim0, prim1, add_pt1, cur_prim);
+		}
+	}
+	removeprim(0, primnum, 0);
+	if (len(prim0) == 3 || len(prim1) == 3)
+	{
+		int add_pt = addpoint(0, lerp(prim_P, sum_edge_P/2, rate_max));
+		setpointattrib(0, attr_name, add_pt, cut_dist);
+		if (len(prim0) == 3)
+		{
+			insert(prim0, find(prim0, edge[0])+1, add_pt);
+			insert(prim1, find(prim1, edge[1])+1, add_pt);
+			// Split prim1 in two
+			int f = find(prim1, diag_pts[0]);
+			int len_prim1 = len(prim1);
+			int p1[] = dgfx_Array_Slice(prim1, f-4+1, f+1);
+			int p2[] = dgfx_Array_Slice(prim1, f, f+4);
+			addprim(0, "poly", p1); // quad1
+			addprim(0, "poly", p2); // quad2
+			addprim(0, "poly", prim0); // triangle
+		}
+		else // If prim1 is a triangle
+		{
+			insert(prim0, find(prim0, edge[0])+1, add_pt);
+			insert(prim1, find(prim1, edge[1])+1, add_pt);
+			// Split prim0 in two
+			int f = find(prim0, diag_pts[0]);
+			int len_prim0 = len(prim0);
+			int p1[] = dgfx_Array_Slice(prim0, f-4+1, f+1);
+			int p2[] = dgfx_Array_Slice(prim0, f, f+4);
+			addprim(geo, "poly", p1); // quad1
+			addprim(geo, "poly", p2); // quad2
+			addprim(geo, "poly", prim1); // triangle
+		}
+	}
+	else
+	{
+		addprim(geo, "poly", prim0);
+		addprim(geo, "poly", prim1);
+	}
+}
+
+/**
  *	Controlable Smooth Step
  */
 function float dgfx_SmoothStep(const float x, edge, ofs)
@@ -427,6 +577,60 @@ function void dgfx_BreakMatrix(vector A_col_0, A_col_1, A_col_2; const matrix3 A
 		 , A_col_1.x, A_col_1.y, A_col_1.z
 		 , A_col_2.x, A_col_2.y, A_col_2.z
 		 , A);
+}
+
+/**
+ * Extract Axes
+ */
+function void dgfx_Extract_Axes(vector axis_x, axis_y, axis_z; const matrix3 A)
+{
+	dgfx_BreakMatrix(axis_x, axis_y, axis_z, A);
+}
+
+/**
+ * Make 4x4 Matrix
+ */
+function matrix dgfx_MakeMatrix4x4(const matrix3 m33; const vector t)
+{
+	matrix m;
+	pass_through(m33, m, 0, 0); pass_through(m33, m, 0, 1); pass_through(m33, m, 0, 2); setcomp(m, 0, 0, 3);
+	pass_through(m33, m, 1, 0); pass_through(m33, m, 1, 1); pass_through(m33, m, 1, 2); setcomp(m, 0, 1, 3);
+	pass_through(m33, m, 2, 0); pass_through(m33, m, 2, 1); pass_through(m33, m, 2, 2); setcomp(m, 0, 2, 3);
+	setcomp(m, t.x, 3, 0); setcomp(m, t.y, 3, 1); setcomp(m, t.z, 3, 2); setcomp(m, 1, 3, 3);
+	return m;
+}
+
+/**
+ * Make cross product matrix aka Skew-symmetric matrix
+ */
+function matrix3 dgfx_MakeCrossProductMatrix3x3(const vector v)
+{
+	matrix3 m;
+	SET(m, 0, 0, 0);		SET(m, 0, 1, -v[2]);	SET(m, 0, 2,  v[1]);
+	SET(m, 1, 0,  v[2]);	SET(m, 1, 1, 0);		SET(m, 1, 2, -v[0]);
+	SET(m, 2, 0, -v[1]);	SET(m, 2, 1, v[0]);		SET(m, 2, 2,     0);
+	return m;
+}
+
+/**
+ * Local Axes to Object Coordinate
+ */
+function matrix3 dgfx_MakeLocalCoordinate_By_WorldAxes(const vector e1, e2, e3)
+{
+	matrix3 local;
+	setcomp(local, e1.x, 0, 0); setcomp(local, e1.y, 0, 1); setcomp(local, e1.z, 0, 2);
+	setcomp(local, e2.x, 1, 0); setcomp(local, e2.y, 1, 1); setcomp(local, e2.z, 1, 2);
+	setcomp(local, e3.x, 2, 0); setcomp(local, e3.y, 2, 1); setcomp(local, e3.z, 2, 2);
+	return local;
+}
+
+/**
+ * World -> Local transform matrix
+ */
+function matrix3 dgfx_ToLocalMatrix3x3_By_WorldAxes(const vector e1, e2, e3)
+{
+	matrix3 to_local = invert(dgfx_MakeLocalCoordinate_By_WorldAxes(e1, e2, e3));
+	return to_local;
 }
 
 /**
