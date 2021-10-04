@@ -402,11 +402,14 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
  *    in Primitive Wrangle
  *    dgfx_PolyCut2(0, @primnum, @P, "dist", cut_dist);
  *
- * Known Issue
- * cut_value := 0.5
- * 1.0 *----* 0.0
- *     |    |
- * 0.0 *----* 1.0
+ * Known special case
+ *   cut_value := 0.5
+ *        Before                After
+ * 1.0 *---------* 0.0       *----*----*
+ *     |         |           |    |    |
+ *     |         |      =>   *----*----*
+ *     |         |           |    |    |
+ * 0.0 *---------* 1.0       *----*----*
  */
 function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string attr_name; const float cut_value)
 {
@@ -419,10 +422,10 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
     int numpt = len(pts);
     // Dividing into two fragmented groups
     // If the original is a quadrilateral, then it is either a quadrilateral x 2 or a triangle + quadrilateral
-    int prim0[]; int prim1[]; int edge[];
+    int prim0[]; int prim1[]; int cut_pts[];
+    vector cut_Ps[];
     int cur_prim = 0;
     vector sum_edge_P = set(0);
-    float rate_max = 0;
     // iterates all Points and looking at the Edges
     for(int i=0; i<numpt; ++i)
     {
@@ -447,32 +450,66 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
             removevalue(diag_pts, e_pts[1]);
             // Calculate the mixing rate at the cut position
             float rate = invlerp(cut_value, e_attr[0], e_attr[1]);
-            // Find the rate to use to determine the position of the branch Point
-            rate_max = max(rate_max, rate);
             vector cut_P = lerp(e_P[0], e_P[1], rate);
             sum_edge_P += cut_P;
-            int add_pt1 = addpoint(geo, cut_P);
-            setpointattrib(geo, attr_name, add_pt1, cut_value);
-            polycut_store(prim0, prim1, add_pt1, cur_prim);
-            append(edge, add_pt1);
+            int cut_pt = addpoint(geo, cut_P);
+            setpointattrib(geo, attr_name, cut_pt, cut_value);
+            polycut_store(prim0, prim1, cut_pt, cur_prim);
+            append(cut_pts, cut_pt);
+            append(cut_Ps, cut_P);
             cur_prim = 1 - cur_prim;
-            polycut_store(prim0, prim1, add_pt1, cur_prim);
+            polycut_store(prim0, prim1, cut_pt, cur_prim);
         }
     }
+    // Creating the primitives
     removeprim(geo, primnum, 0);
     if (num_poly == 3)
     {
         addprim(geo, "poly", prim0);
         addprim(geo, "poly", prim1);
     }
+    else if (len(cut_pts) == 4)
+    {
+        int center_pt = addpoint(geo, sum_edge_P/4);
+        addprim(geo, "poly", pts[0], cut_pts[0], center_pt, cut_pts[3]);
+        addprim(geo, "poly", pts[1], cut_pts[1], center_pt, cut_pts[0]);
+        addprim(geo, "poly", pts[2], cut_pts[2], center_pt, cut_pts[1]);
+        addprim(geo, "poly", pts[3], cut_pts[3], center_pt, cut_pts[2]);
+    }
     else if (len(prim0) == 3 || len(prim1) == 3)
     {
-        int add_pt = addpoint(geo, lerp(prim_P, sum_edge_P/2, rate_max));
+        // Maximum distance between Points, used to determine the position of the branching point.
+        float max_pt_dist = 0;
+        for (int i=0; i<num_poly-1; ++i)
+        {
+            vector i_P = point(geo, "P", pts[i]);
+            for (int j=i+1; j<num_poly; ++j)
+            {
+                vector j_P = point(geo, "P", pts[j]);
+                max_pt_dist = max(max_pt_dist, distance(i_P, j_P));
+            }
+        }
+        // Maximum distance between the cut Points used to determine the position of the branching point.
+        float max_cut_pt_dist = 0;
+        int num_cut_pts = len(cut_pts);
+        for (int i=0; i<num_cut_pts-1; ++i)
+        {
+            vector i_P = cut_Ps[i];
+            for (int j=i+1; j<num_cut_pts; ++j)
+            {
+                vector j_P = cut_Ps[j];
+                max_cut_pt_dist = max(max_cut_pt_dist, distance(i_P, j_P));
+            }
+        }
+        // Find the rate to use to determine the position of the branch Point
+        float branch_rate = clamp01(max_cut_pt_dist/max_pt_dist);
+        // Create branch Point
+        int add_pt = addpoint(geo, lerp(sum_edge_P/2, prim_P, branch_rate));
         setpointattrib(geo, attr_name, add_pt, cut_value);
         if (len(prim0) == 3)
         {
-            insert(prim0, find(prim0, edge[0])+1, add_pt);
-            insert(prim1, find(prim1, edge[1])+1, add_pt);
+            insert(prim0, find(prim0, cut_pts[0])+1, add_pt);
+            insert(prim1, find(prim1, cut_pts[1])+1, add_pt);
             // Split prim1 in two
             int f = find(prim1, diag_pts[0]);
             int len_prim1 = len(prim1);
@@ -484,8 +521,8 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
         }
         else // If prim1 is a triangle
         {
-            insert(prim0, find(prim0, edge[0])+1, add_pt);
-            insert(prim1, find(prim1, edge[1])+1, add_pt);
+            insert(prim0, find(prim0, cut_pts[0])+1, add_pt);
+            insert(prim1, find(prim1, cut_pts[1])+1, add_pt);
             // Split prim0 in two
             int f = find(prim0, diag_pts[0]);
             int len_prim0 = len(prim0);
