@@ -414,7 +414,7 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
 
     int pts[] = primpoints(0, primnum);
     int num_poly = len(pts);
-    if (num_poly != 4) { return; }
+    if (num_poly != 4 && num_poly != 3) { return; }
     int diag_pts[] = pts;
     int numpt = len(pts);
     // Dividing into two fragmented groups
@@ -460,7 +460,12 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
         }
     }
     removeprim(geo, primnum, 0);
-    if (len(prim0) == 3 || len(prim1) == 3)
+    if (num_poly == 3)
+    {
+        addprim(geo, "poly", prim0);
+        addprim(geo, "poly", prim1);
+    }
+    else if (len(prim0) == 3 || len(prim1) == 3)
     {
         int add_pt = addpoint(geo, lerp(prim_P, sum_edge_P/2, rate_max));
         setpointattrib(geo, attr_name, add_pt, cut_value);
