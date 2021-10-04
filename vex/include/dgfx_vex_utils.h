@@ -7,28 +7,28 @@
 #ifndef dgfx_vex_utils_h
 #define dgfx_vex_utils_h
 
-#define mod(a, b)			((a) % (b))
-#define mix(a, b, t)		lerp((a), (b), (t))
-#define clamp01(v)			clamp(v, 0.0, 1.0)
-#define vector3_ctor(v, f)	(set((v).x, (v).y, f))
-#define vector4_ctor(v, f)	(set((v).x, (v).y, (v).z, f))
-#define swap(type, a, b)	{ type __tmp = a; a = b; b = __tmp; }
-#define sqr(x)				((x)*(x))
+#define mod(a, b)           ((a) % (b))
+#define mix(a, b, t)        lerp((a), (b), (t))
+#define clamp01(v)          clamp(v, 0.0, 1.0)
+#define vector3_ctor(v, f)  (set((v).x, (v).y, f))
+#define vector4_ctor(v, f)  (set((v).x, (v).y, (v).z, f))
+#define swap(type, a, b)    { type __tmp = a; a = b; b = __tmp; }
+#define sqr(x)              ((x)*(x))
 
 // repeat(4, 0, 4) => 0
 #define repeat(value, min, max) (((max-min) <= 0) ? min : mod(value-min, max-min) + min)
-#define log_base(value, base)	(log(value)/log(base))
-#define log2(value)				(log_base(value, 2.0))
-#define exp2(value)				(pow(2.0, value))
-#define factorial(n)			(dgfx_Calc_Factorial(n))
+#define log_base(value, base)   (log(value)/log(base))
+#define log2(value)	            (log_base(value, 2.0))
+#define exp2(value)             (pow(2.0, value))
+#define factorial(n)            (dgfx_Calc_Factorial(n))
 
-#define pass_through(src, dst, row, col)	setcomp(dst, getcomp(src, row, col), row, col)
+#define pass_through(src, dst, row, col) setcomp(dst, getcomp(src, row, col), row, col)
 #define GET(A, r, c)        getcomp(A, r, c)
 #define SET(A, r, c, value) setcomp(A, value, r, c)
 
 /**
- *	calc factorial
- *	ex: 3! = 3*2*1
+ * calc factorial
+ * ex: 3! = 3*2*1
  */
 function int dgfx_Calc_Factorial(const int n)
 {
@@ -38,7 +38,7 @@ function int dgfx_Calc_Factorial(const int n)
 }
 
 /**
- *	Array Intersection
+ * Array Intersection
  */
 #define ArrayIntersection(out_array, array_a, array_b)	\
 {\
@@ -95,9 +95,9 @@ function float[]  dgfx_Array_Slice_Repeatable(const float arr[];  const int star
 function vector[] dgfx_Array_Slice_Repeatable(const vector arr[]; const int start, end) { vector ret[]; ArraySliceRepeatable(ret, arr, start, end); return ret; }
 
 /**
- *	Shuffle Array (in place)
+ * Shuffle Array (in place)
  */
-#define ArrayShuffle(type, inout_array, seed_01)	\
+#define ArrayShuffle(type, inout_array, seed_01)\
 {\
     int size = len(inout_array);\
     for (int i=size-1; 1<=i; --i)\
@@ -113,7 +113,7 @@ function void dgfx_Array_Shuffle(float arr[];  float seed_01) { ArrayShuffle(flo
 function void dgfx_Array_Shuffle(vector arr[]; float seed_01) { ArrayShuffle(vector, arr, seed_01); }
 
 /**
- *	Calc Vector Angle (radian)
+ * Calc Vector Angle (radian)
  */
 function float dgfx_Calc_Vector_Radian(const vector vec1, vec2)
 {
@@ -123,7 +123,7 @@ function float dgfx_Calc_Vector_Radian(const vector vec1, vec2)
 }
 
 /**
- *	Vector Projection
+ * Vector Projection
  */
 function float dgfx_Vector_Extract_Vertical(vector tgt; const vector dir)
 {
@@ -150,7 +150,7 @@ function float dgfx_Calc_Perpendicular_Foot(vector ret; const vector pos, edge_b
 }
 
 /**
- *	Calc orient (Quaternion) from Two Vectors
+ * Calc orient (Quaternion) from Two Vectors
  */
 function vector4 dgfx_Calc_Orient_Front_Side(const vector front, side)
 {
@@ -161,7 +161,7 @@ function vector4 dgfx_Calc_Orient_Front_Side(const vector front, side)
 }
 
 /**
- *	Create Axis Geometry (for Visualize)
+ * Create Axis Geometry (for Visualize)
  */
 function void dgfx_Create_Axis_Geomety(const float axis_len)
 {
@@ -178,7 +178,7 @@ function void dgfx_Create_Axis_Geomety(const float axis_len)
 }
 
 /**
- *	Normalized Value to Color
+ * Normalized Value to Color
  */
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
@@ -193,7 +193,7 @@ function vector dgfx_Calc_HeatMap_Color(float value_01)
 }
 
 /**
- *	Quadratic Bezier Curve	
+ * Quadratic Bezier Curve	
  */
 function vector dgfx_BezierQuadratic_Position(float t_01; vector p0, p1, p2)
 {
@@ -214,7 +214,7 @@ function vector dgfx_BezierQuadratic_Derivative_2nd(float t_01; vector p0, p1, p
 }
 
 /**
- *	Cubic Bezier Curve
+ * Cubic Bezier Curve
  */
 function vector dgfx_BezierCubic_Position(float t_01; vector p0, p1, p2, p3)
 {
@@ -243,7 +243,7 @@ function vector dgfx_BezierCubic_Derivative_2nd(float t_01; vector p0, p1, p2, p
 }
 
 /**
- *	Calc Circle Center Position
+ * Calc Circle Center Position
  */
 function void dgfx_Calc_Circumscribed_Circle(float ret_r; vector ret_center, ret_plane_nrm; const vector a, b, c)
 {
@@ -261,11 +261,11 @@ function void dgfx_Calc_Circumscribed_Circle(float ret_r; vector ret_center, ret
 }
 
 /**
- *	is Primitive Vertex Looped ?
+ * is Primitive Vertex Looped ?
  */
 function int dgfx_IsLooped_PrimVertex(int geometry, prim_num)
 {
-//	int is_closed = primintrinsic(geometry, "closed", prim_num); // this is whether open or closed prim
+//  int is_closed = primintrinsic(geometry, "closed", prim_num); // this is whether open or closed prim
     int num_vtx = primvertexcount(geometry, prim_num);
     int src_vtx_1st = primvertex(geometry, prim_num, 0);
     int src_vtx_end = primvertex(geometry, prim_num, num_vtx-1);
@@ -275,7 +275,7 @@ function int dgfx_IsLooped_PrimVertex(int geometry, prim_num)
 }
 
 /**
- *	append polyline from array of point number
+ * append polyline from array of point number
  */
 function void dgfx_Append_PolyLine_from_Points(vector pts[]; int is_prim_looped)
 {
@@ -316,8 +316,8 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
         start_j_2nd++;
         end_j_1st--;
     }
-//	printf("num_vtx = %d, order = %d, num_corner = %d, round_01 = %f\n", num_vtx, order, num_corner, round_01);
-//	printf("branch_index = %d, end_j_1st = %d, start_j_2nd = %d, div_num = %d, is_prim_looped = %d\n", branch_index, end_j_1st, start_j_2nd, div_num, is_prim_looped);
+    //printf("num_vtx = %d, order = %d, num_corner = %d, round_01 = %f\n", num_vtx, order, num_corner, round_01);
+    //printf("branch_index = %d, end_j_1st = %d, start_j_2nd = %d, div_num = %d, is_prim_looped = %d\n", branch_index, end_j_1st, start_j_2nd, div_num, is_prim_looped);
     for (int i=0; i<num_corner; ++i)
     {
         int vtx_0 = primvertex(src_geo, src_prim, (i)%num_vtx);
@@ -331,7 +331,7 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
             vtx_2 = (vtx_2 + 1) % num_vtx;
             pt_2 = vertexpoint(src_geo, vtx_2);
         }
-//		printf("pts = [%d, %d, %d]\n", pt_0, pt_1, pt_2);
+        //printf("pts = [%d, %d, %d]\n", pt_0, pt_1, pt_2);
         vector pos_0 = point(src_geo, "P", pt_0);
         vector pos_1 = point(src_geo, "P", pt_1);
         vector pos_2 = point(src_geo, "P", pt_2);
@@ -345,7 +345,7 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
                 float rate = fit(clamp(float(s)/(append_1st_num), 0, 1), 0, 1, 0, 0.5);
                 vector pos = lerp(pos_0, pos_1, rate);
                 append(pts, pos);
-//				printf("01 : [%d - %d]rate = %f\n", pt_0, pt_1, rate);
+                //printf("01 : [%d - %d]rate = %f\n", pt_0, pt_1, rate);
             }
         }
 
@@ -359,20 +359,20 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
                 pos_s = pos_0; pos_e = pos_1;
                 rate = clamp(float(j) / end_j_1st, 0.0, 1.0);
                 rate = fit(rate, 0.0, 1.0, 0.5, 0.5 + 0.5 * (1.0-round_01));
-            //	printf("02 : [%d - %d]rate = %f j = %d\n", pt_0, pt_1, rate, j);
+                //printf("02 : [%d - %d]rate = %f j = %d\n", pt_0, pt_1, rate, j);
             }
             else if (j == branch_index) // just corner vertex
             {
                 pos_s = pos_0; pos_e = pos_1;
                 rate = 1.0;
-            //	printf("03 : [%d - %d]rate = %f j = %d\n", pt_0, pt_1, rate, j);
+                //printf("03 : [%d - %d]rate = %f j = %d\n", pt_0, pt_1, rate, j);
             }
             else
             {
                 pos_s = pos_1; pos_e = pos_2;
                 rate = clamp((float(j - start_j_2nd) / (div_num - start_j_2nd)), 0.0, 1.0);
                 rate = fit(rate, 0.0, 1.0, 0.5*round_01, 0.5);
-            //	printf("04 : [%d - %d]rate = %f j = %d\n", pt_1, pt_2, rate, j);
+                //printf("04 : [%d - %d]rate = %f j = %d\n", pt_1, pt_2, rate, j);
             }
             vector append_pos = lerp(pos_s, pos_e, rate);
             append(pts, append_pos);
@@ -387,7 +387,7 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
                 float rate = fit(clamp(float(s)/(append_last_num-1), 0, 1), 0, 1, 0.5, 1.0);
                 vector pos = lerp(pos_1, pos_2, rate);
                 append(pts, pos);
-//				printf("04 : [%d - %d]rate = %f\n", pt_1, pt_2, rate);
+                //printf("04 : [%d - %d]rate = %f\n", pt_1, pt_2, rate);
             }
         }
     }
@@ -413,9 +413,8 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
     #define polycut_store(prim0, prim1, pt, cur_prim)	{ if (cur_prim == 0) { append(prim0, pt); } else { append(prim1, pt); } }
 
     int pts[] = primpoints(0, primnum);
-    int diag_pts[] = pts;
     if (len(pts) != 4) { return; }
-    float cut_dist = chf("cut_distance");
+    int diag_pts[] = pts;
     int numpt = len(pts);
     // Dividing into two fragmented groups
     // If the original is a quadrilateral, then it is either a quadrilateral x 2 or a triangle + quadrilateral
@@ -451,19 +450,19 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
             rate_max = max(rate_max, rate);
             vector cut_P = lerp(e_P[0], e_P[1], rate);
             sum_edge_P += cut_P;
-            int add_pt1 = addpoint(0, cut_P);
-            setpointattrib(0, attr_name, add_pt1, cut_dist);
+            int add_pt1 = addpoint(geo, cut_P);
+            setpointattrib(geo, attr_name, add_pt1, cut_dist);
             polycut_store(prim0, prim1, add_pt1, cur_prim);
             append(edge, add_pt1);
             cur_prim = 1 - cur_prim;
             polycut_store(prim0, prim1, add_pt1, cur_prim);
         }
     }
-    removeprim(0, primnum, 0);
+    removeprim(geo, primnum, 0);
     if (len(prim0) == 3 || len(prim1) == 3)
     {
-        int add_pt = addpoint(0, lerp(prim_P, sum_edge_P/2, rate_max));
-        setpointattrib(0, attr_name, add_pt, cut_dist);
+        int add_pt = addpoint(geo, lerp(prim_P, sum_edge_P/2, rate_max));
+        setpointattrib(geo, attr_name, add_pt, cut_dist);
         if (len(prim0) == 3)
         {
             insert(prim0, find(prim0, edge[0])+1, add_pt);
@@ -473,9 +472,9 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
             int len_prim1 = len(prim1);
             int p1[] = dgfx_Array_Slice(prim1, f-4+1, f+1);
             int p2[] = dgfx_Array_Slice(prim1, f, f+4);
-            addprim(0, "poly", p1); // quad1
-            addprim(0, "poly", p2); // quad2
-            addprim(0, "poly", prim0); // triangle
+            addprim(geo, "poly", p1); // quad1
+            addprim(geo, "poly", p2); // quad2
+            addprim(geo, "poly", prim0); // triangle
         }
         else // If prim1 is a triangle
         {
@@ -499,7 +498,7 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
 }
 
 /**
- *	Controlable Smooth Step
+ * Controlable Smooth Step
  */
 function float dgfx_SmoothStep(const float x, edge, ofs)
 {
@@ -512,8 +511,8 @@ function float dgfx_SmoothStep(const float x, edge, ofs)
 }
 
 /**
- *	Count Edges (not half edges)
- *	from https://www.sidefx.com/docs/houdini/vex/functions/pointhedgenext.html
+ * Count Edges (not half edges)
+ * from https://www.sidefx.com/docs/houdini/vex/functions/pointhedgenext.html
  */
 function int dgfx_CountEdges(int geo, pt)
 {
@@ -530,8 +529,8 @@ function int dgfx_CountEdges(int geo, pt)
 }
 
 /**
- *	Make 3D Shear Matrix
- *	ref https://www.sidefx.com/docs/houdini/vex/functions/maketransform.html
+ * Make 3D Shear Matrix
+ * ref https://www.sidefx.com/docs/houdini/vex/functions/maketransform.html
  */
 function matrix dgfx_MakeShearMatrix(const vector shear)
 {
@@ -547,8 +546,8 @@ function matrix dgfx_MakeShearMatrix(const vector shear)
 }
 
 /**
- *	Calc Color Palette
- *	from http://iquilezles.org/www/articles/palettes/palettes.htm
+ * Calc Color Palette
+ * from http://iquilezles.org/www/articles/palettes/palettes.htm
  */
 function vector dgfx_ColorPalette(float t; vector a, b, c, d)
 {
@@ -557,7 +556,7 @@ function vector dgfx_ColorPalette(float t; vector a, b, c, d)
 }
 
 /**
- *	Rainbow Color Palette
+ * Rainbow Color Palette
  */
 function vector dgfx_ColorPaletteRainbow(float t)
 {
@@ -569,7 +568,7 @@ function vector dgfx_ColorPaletteRainbow(float t)
 }
 
 /**
- *	Break Matrix Component
+ * Break Matrix Component
  */
 function void dgfx_BreakMatrix(vector A_col_0, A_col_1, A_col_2; const matrix3 A)
 {
@@ -634,7 +633,7 @@ function matrix3 dgfx_ToLocalMatrix3x3_By_WorldAxes(const vector e1, e2, e3)
 }
 
 /**
- *	Project vector to plane
+ * Project vector to plane
  */
 function vector dgfx_Proj_to_Plane(const vector src, plane_nrm)
 {
@@ -644,23 +643,23 @@ function vector dgfx_Proj_to_Plane(const vector src, plane_nrm)
 }
 
 /**
- *	OpenGL Projection Matrix
+ * OpenGL Projection Matrix
  */
 function matrix dgfx_Calc_Projection_Mtx_GL(const float fovy, near, far, h_div_w)
 {
     float e = 1.0/tan(fovy/2.0);
     float a = h_div_w;
     float inv_fn = 1.0/(far - near);
-    matrix proj_mtx = set(e,   0,				 0,					  0,
-                          0, e/a,				 0,					  0,
+    matrix proj_mtx = set(e,   0,                0,                   0,
+                          0, e/a,                0,                   0,
                           0,   0,-(far+near)*inv_fn, -2*far*near*inv_fn,
-                          0,   0,				-1,					  0);
+                          0,   0,               -1,                   0);
     proj_mtx = transpose(proj_mtx);
     return proj_mtx;
 }
 
 /**
- *	Get Local Box Points
+ * Get Local Box Points
  */
 function void dgfx_Calc_Local_Box_Points(vector points[])
 {
@@ -675,8 +674,8 @@ function void dgfx_Calc_Local_Box_Points(vector points[])
 }
 
 /**
- *	Apply Transform using Perspective Divide
- *	World <--> NDC
+ * Apply Transform using Perspective Divide
+ * World <--> NDC
  */
 function vector dgfx_Transform_Projection(const vector P; const matrix A, B)
 {
