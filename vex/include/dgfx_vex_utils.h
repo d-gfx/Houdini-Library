@@ -481,7 +481,7 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
         int mid_pts[];
         for (int i=0; i<num_cut; ++i)
         {
-            vector mid_P = lerp(cut_Ps[i], cut_Ps[i%num_cut], 0.5);
+            vector mid_P = lerp(cut_Ps[i], cut_Ps[(i+1)%num_cut], 0.5);
             int mid_pt = addpoint(geo, mid_P);
             // TODO : more correctness...
             setpointattrib(geo, attr_name, mid_pt, cut_value);
