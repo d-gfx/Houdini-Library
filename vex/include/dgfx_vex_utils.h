@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019 d-gfx
+ * Copyright (c) 2019 - 2021 d-gfx
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -18,7 +18,7 @@
 // repeat(4, 0, 4) => 0
 #define repeat(value, min, max) (((max-min) <= 0) ? min : mod(value-min, max-min) + min)
 #define log_base(value, base)   (log(value)/log(base))
-#define log2(value)	            (log_base(value, 2.0))
+#define log2(value)             (log_base(value, 2.0))
 #define exp2(value)             (pow(2.0, value))
 #define factorial(n)            (dgfx_Calc_Factorial(n))
 
@@ -413,7 +413,8 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
     #define polycut_store(prim0, prim1, pt, cur_prim)	{ if (cur_prim == 0) { append(prim0, pt); } else { append(prim1, pt); } }
 
     int pts[] = primpoints(0, primnum);
-    if (len(pts) != 4) { return; }
+    int num_poly = len(pts);
+    if (num_poly != 4) { return; }
     int diag_pts[] = pts;
     int numpt = len(pts);
     // Dividing into two fragmented groups
@@ -439,19 +440,19 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
         e_attr = reorder(e_attr, indices);
         e_P    = reorder(e_P, indices);
         // cut position found
-        if (e_attr[0] < cut_dist && cut_dist < e_attr[1])
+        if (e_attr[0] < cut_value && cut_value < e_attr[1])
         {
             // If you delete a Point that is involved, it will either disappear altogether or leave only one Point that is not involved at all.
             removevalue(diag_pts, e_pts[0]);
             removevalue(diag_pts, e_pts[1]);
             // Calculate the mixing rate at the cut position
-            float rate = invlerp(cut_dist, e_attr[0], e_attr[1]);
+            float rate = invlerp(cut_value, e_attr[0], e_attr[1]);
             // Find the rate to use to determine the position of the branch Point
             rate_max = max(rate_max, rate);
             vector cut_P = lerp(e_P[0], e_P[1], rate);
             sum_edge_P += cut_P;
             int add_pt1 = addpoint(geo, cut_P);
-            setpointattrib(geo, attr_name, add_pt1, cut_dist);
+            setpointattrib(geo, attr_name, add_pt1, cut_value);
             polycut_store(prim0, prim1, add_pt1, cur_prim);
             append(edge, add_pt1);
             cur_prim = 1 - cur_prim;
@@ -462,7 +463,7 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
     if (len(prim0) == 3 || len(prim1) == 3)
     {
         int add_pt = addpoint(geo, lerp(prim_P, sum_edge_P/2, rate_max));
-        setpointattrib(geo, attr_name, add_pt, cut_dist);
+        setpointattrib(geo, attr_name, add_pt, cut_value);
         if (len(prim0) == 3)
         {
             insert(prim0, find(prim0, edge[0])+1, add_pt);
