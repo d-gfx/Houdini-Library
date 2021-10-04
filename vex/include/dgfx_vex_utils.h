@@ -401,15 +401,6 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
  *  How to Use :
  *    in Primitive Wrangle
  *    dgfx_PolyCut2(0, @primnum, @P, "dist", cut_dist);
- *
- * Known special case
- *   cut_value := 0.5
- *        Before                After
- * 1.0 *---------* 0.0       *----*----*
- *     |         |           |    |    |
- *     |         |      =>   *----*----*
- *     |         |           |    |    |
- * 0.0 *---------* 1.0       *----*----*
  */
 function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string attr_name; const float cut_value)
 {
