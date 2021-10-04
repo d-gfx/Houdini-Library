@@ -421,11 +421,13 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
     int diag_pts[] = pts;
     int numpt = len(pts);
     // Dividing into two fragmented groups
-    // If the original is a quadrilateral, then it is either a quadrilateral x 2 or a triangle + quadrilateral
+    // If the original is a quadrilateral, 
+    // then it is either a quadrilateral x 2 or a triangle + quadrilateral
     int prim0[]; int prim1[]; int cut_pts[];
     vector cut_Ps[];
     int cur_prim = 0;
     vector sum_edge_P = set(0);
+    float rate_min = 1.0;
     // iterates all Points and looking at the Edges
     for(int i=0; i<numpt; ++i)
     {
@@ -445,11 +447,14 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
         // cut position found
         if (e_attr[0] < cut_value && cut_value < e_attr[1])
         {
-            // If you delete a Point that is involved, it will either disappear altogether or leave only one Point that is not involved at all.
+            // If you delete a Point that is involved, 
+            // it will either disappear altogether or leave only one Point that is not involved at all.
             removevalue(diag_pts, e_pts[0]);
             removevalue(diag_pts, e_pts[1]);
             // Calculate the mixing rate at the cut position
             float rate = invlerp(cut_value, e_attr[0], e_attr[1]);
+            // Find the minimum rate from the edge endpoint to determine the position of the branch point
+            rate_min = min(rate_min, min(clamp01(rate), clamp01(1-rate)));
             vector cut_P = lerp(e_P[0], e_P[1], rate);
             sum_edge_P += cut_P;
             int cut_pt = addpoint(geo, cut_P);
@@ -470,41 +475,30 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
     }
     else if (len(cut_pts) == 4)
     {
+        // Add 4 midpoints to make everything quad,
         int center_pt = addpoint(geo, sum_edge_P/4);
-        addprim(geo, "poly", pts[0], cut_pts[0], center_pt, cut_pts[3]);
-        addprim(geo, "poly", pts[1], cut_pts[1], center_pt, cut_pts[0]);
-        addprim(geo, "poly", pts[2], cut_pts[2], center_pt, cut_pts[1]);
-        addprim(geo, "poly", pts[3], cut_pts[3], center_pt, cut_pts[2]);
+        int num_cut = len(cut_pts);
+        int mid_pts[];
+        for (int i=0; i<num_cut; ++i)
+        {
+            vector mid_P = lerp(cut_Ps[i], cut_Ps[i%num_cut], 0.5);
+            int mid_pt = addpoint(geo, mid_P);
+            append(mid_pts, mid_pt);
+        }
+        // and add all 8 quads
+        for (int i=0; i<4; ++i)
+        {
+            addprim(geo, "poly", pts[i], cut_pts[i], mid_pts[(-1+i)%num_cut], cut_pts[(-1+i)%num_cut]);
+            addprim(geo, "poly", cut_pts[i], mid_pts[i], center_pt, mid_pts[(-1+i)%num_cut]);
+        }
     }
     else if (len(prim0) == 3 || len(prim1) == 3)
     {
-        // Maximum distance between Points, used to determine the position of the branching point.
-        float max_pt_dist = 0;
-        for (int i=0; i<num_poly-1; ++i)
-        {
-            vector i_P = point(geo, "P", pts[i]);
-            for (int j=i+1; j<num_poly; ++j)
-            {
-                vector j_P = point(geo, "P", pts[j]);
-                max_pt_dist = max(max_pt_dist, distance(i_P, j_P));
-            }
-        }
-        // Maximum distance between the cut Points used to determine the position of the branching point.
-        float max_cut_pt_dist = 0;
-        int num_cut_pts = len(cut_pts);
-        for (int i=0; i<num_cut_pts-1; ++i)
-        {
-            vector i_P = cut_Ps[i];
-            for (int j=i+1; j<num_cut_pts; ++j)
-            {
-                vector j_P = cut_Ps[j];
-                max_cut_pt_dist = max(max_cut_pt_dist, distance(i_P, j_P));
-            }
-        }
         // Find the rate to use to determine the position of the branch Point
-        float branch_rate = clamp01(max_cut_pt_dist/max_pt_dist);
+        float branch_rate = pow(rate_min, 2.0);
         // Create branch Point
         int add_pt = addpoint(geo, lerp(sum_edge_P/2, prim_P, branch_rate));
+        //int add_pt = addpoint(geo, sum_edge_P/2);
         setpointattrib(geo, attr_name, add_pt, cut_value);
         if (len(prim0) == 3)
         {
