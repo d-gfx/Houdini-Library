@@ -38,6 +38,29 @@ function int dgfx_Calc_Factorial(const int n)
 }
 
 /**
+ * Array Condition
+ */
+#define ArrayCondition(out_array, array_a, cond_func)\
+{\
+    for (int _i=0; _i<len(array_a); ++_i)\
+    {\
+        if (cond_func(array_a[_i])) { append(out_array, array_a[_i]); }\
+    }\
+}
+#define ArrayConditionByObject(out_array, array_a, cond_obj)\
+{\
+    for (int _i=0; _i<len(array_a); ++_i)\
+    {\
+        if (cond_obj->condition(array_a[_i])) { append(out_array, array_a[_i]); }\
+    }\
+}
+struct ConditionLessThan
+{
+    int judge;
+    int condition(const int value) { return value < judge; }
+}
+
+/**
  * Array Intersection
  */
 #define ArrayIntersection(out_array, array_a, array_b)	\
@@ -52,6 +75,23 @@ function int dgfx_Calc_Factorial(const int n)
 function int[]    dgfx_Array_Intersection(const int a[], b[])    { int ret[];    ArrayIntersection(ret, a, b); return ret; }
 function float[]  dgfx_Array_Intersection(const float a[], b[])  { float ret[];  ArrayIntersection(ret, a, b); return ret; }
 function vector[] dgfx_Array_Intersection(const vector a[], b[]) { vector ret[]; ArrayIntersection(ret, a, b); return ret; }
+
+/**
+ * Array Subtract
+ * array_a - array_b
+ */
+#define ArraySubtract(out_array, array_a, array_b)	\
+{\
+    for (int i=0; i<len(array_a); ++i)\
+    {\
+        if (find(array_b, array_a[i]) < 0)\
+            append(out_array, array_a[i]);\
+    }\
+}
+
+function int[]    dgfx_Array_Subtract(const int a[], b[])    { int ret[];    ArraySubtract(ret, a, b); return ret; }
+function float[]  dgfx_Array_Subtract(const float a[], b[])  { float ret[];  ArraySubtract(ret, a, b); return ret; }
+function vector[] dgfx_Array_Subtract(const vector a[], b[]) { vector ret[]; ArraySubtract(ret, a, b); return ret; }
 
 /**
  * Array Slice
