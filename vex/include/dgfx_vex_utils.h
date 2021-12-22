@@ -22,6 +22,8 @@
 #define exp2(value)             (pow(2.0, value))
 #define factorial(n)            (dgfx_Calc_Factorial(n))
 
+#define is_in_array(data, arr)  (0<=find(arr, data))
+
 #define pass_through(src, dst, row, col) setcomp(dst, getcomp(src, row, col), row, col)
 #define GET(A, r, c)        getcomp(A, r, c)
 #define SET(A, r, c, value) setcomp(A, value, r, c)
@@ -58,6 +60,11 @@ struct ConditionLessThan
 {
     int judge;
     int condition(const int value) { return value < judge; }
+}
+struct ConditionGreaterThan
+{
+    int judge;
+    int condition(const int value) { return judge < value; }
 }
 
 /**
