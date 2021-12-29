@@ -606,6 +606,25 @@ function int dgfx_CountEdges(int geo, pt)
 }
 
 /**
+ * Get Primitive Half Edges
+ */
+function int[] dgfx_Get_Primitive_Half_Edges(int geo, primnum)
+{
+    int start = primhedge(geo, primnum);
+    int iter = start;
+    int edges[];
+    push(edges, start);
+    do
+    {
+        int next = hedge_next(geo, iter);
+        if (find(edges, next) < 0) { push(edges, next); }
+        iter = next;
+    }
+    while (iter != start);
+    return edges;
+}
+
+/**
  * Make 3D Shear Matrix
  * ref https://www.sidefx.com/docs/houdini/vex/functions/maketransform.html
  */
