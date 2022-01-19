@@ -588,6 +588,15 @@ function float dgfx_SmoothStep(const float x, edge, ofs)
 }
 
 /**
+ * Smooth Step GLSL
+ */
+function float dgfx_SmoothstepGLSL(const float edge0, edge1, x)
+{
+    float t = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+    return t * t * (3.0 - 2.0 * t);
+}
+
+/**
  * Count Edges (not half edges)
  * from https://www.sidefx.com/docs/houdini/vex/functions/pointhedgenext.html
  */
