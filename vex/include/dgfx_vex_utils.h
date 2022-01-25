@@ -160,6 +160,29 @@ function void dgfx_Array_Shuffle(float arr[];  float seed_01) { ArrayShuffle(flo
 function void dgfx_Array_Shuffle(vector arr[]; float seed_01) { ArrayShuffle(vector, arr, seed_01); }
 
 /**
+ * Convolution
+ */
+#define CONVOLVE(type, kernel, input, is_minus_looped)\
+{\
+    type ret[];\
+    int K = len(kernel), N = len(input);\
+    for (int i=0; i<N; ++i)\
+    {\
+        ret[i] = kernel[0] * input[i];\
+        for (int k=1; k<K; ++k)\
+        {\
+            if (!is_minus_looped && (i-k) < 0)\
+                break;\
+            ret[i] += kernel[k] * input[i-k];\
+        }\
+    }\
+    return ret;\
+}
+function float[]    dgfx_Convolve(const float   kernel[], input[]; const int is_minus_looped){ CONVOLVE(float, kernel, input, is_minus_looped); }
+function vector2[]  dgfx_Convolve(const vector2 kernel[], input[]; const int is_minus_looped){ CONVOLVE(vector2, kernel, input, is_minus_looped);}
+function vector[]   dgfx_Convolve(const vector  kernel[], input[]; const int is_minus_looped){ CONVOLVE(vector, kernel, input, is_minus_looped);}
+
+/**
  * Calc Vector Angle (radian)
  */
 function float dgfx_Calc_Vector_Radian(const vector vec1, vec2)
@@ -225,18 +248,34 @@ function void dgfx_Create_Axis_Geomety(const float axis_len)
 }
 
 /**
+ * Interpolation from Array
+ */
+#define INTERP_ARRAY(arr, value_01)\
+{\
+    int num_arr = len(arr);\
+    float fract = 0;\
+    float value = clamp(value_01, 0, 1) * (num_arr - 1);\
+    int idx1 = floor(value);\
+    int idx2 = clamp(idx1+1, 0, num_arr-1);\
+    fract = frac(value);\
+    return lerp(arr[idx1], arr[idx2], fract);\
+}
+
+/**
+ * Interpolation from float array
+ */
+function float dgfx_Interp_Array(const float arr[]; const float value_01)
+{
+    INTERP_ARRAY(arr, value_01);
+}
+
+/**
  * Normalized Value to Color
  */
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
     vector colors[] = array({0,0,1}, {0,1,0}, {1,1,0}, {1,0,0}); // enable to add color table.
-    int num_colors = len(colors);
-    float fract = 0;
-    float value = clamp(value_01, 0, 1) * (num_colors - 1);
-    int idx1 = floor(value);
-    int idx2 = clamp(idx1+1, 0, num_colors-1);
-    fract = frac(value);
-    return lerp(colors[idx1], colors[idx2], fract);
+    INTERP_ARRAY(colors, value_01);
 }
 
 /**
