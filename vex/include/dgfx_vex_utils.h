@@ -28,6 +28,14 @@
 #define GET(A, r, c)        getcomp(A, r, c)
 #define SET(A, r, c, value) setcomp(A, value, r, c)
 
+// golden ratio
+#define GOLDEN_RATIO	(1.6180339887)
+
+// golden angle
+#define GOLDEN_ANGLE_DEG    (137.507764) // degree
+#define GOLDEN_ANGLE_RAD    (radians(GOLDEN_ANGLE_DEG))
+
+
 /**
  * calc factorial
  * ex: 3! = 3*2*1
@@ -183,6 +191,12 @@ function vector2[]  dgfx_Convolve(const vector2 kernel[], input[]; const int is_
 function vector[]   dgfx_Convolve(const vector  kernel[], input[]; const int is_minus_looped){ CONVOLVE(vector, kernel, input, is_minus_looped);}
 
 /**
+ * Array Foreach
+ * Example : ARRAY_FOREACH(f_array, f_array[i] += 1);
+ */
+#define ARRAY_FOREACH(arr, exp) for (int i=0; i<len(arr); ++i) { exp; }
+
+/**
  * Calc Vector Angle (radian)
  */
 function float dgfx_Calc_Vector_Radian(const vector vec1, vec2)
@@ -265,6 +279,14 @@ function void dgfx_Create_Axis_Geomety(const float axis_len)
  * Interpolation from float array
  */
 function float dgfx_Interp_Array(const float arr[]; const float value_01)
+{
+    INTERP_ARRAY(arr, value_01);
+}
+
+/**
+ * Interpolation from vector array
+ */
+function vector dgfx_Interp_Array(const vector arr[]; const float value_01)
 {
     INTERP_ARRAY(arr, value_01);
 }
