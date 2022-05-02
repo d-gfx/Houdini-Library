@@ -12,6 +12,8 @@
 #define clamp01(v)          clamp(v, 0.0, 1.0)
 #define vector3_ctor(v, f)  (set((v).x, (v).y, f))
 #define vector4_ctor(v, f)  (set((v).x, (v).y, (v).z, f))
+#define v3f_ctor(v2, f)     vector3_ctor(v2, f)
+#define v4f_ctor(v3, f)     vector4_ctor(v3, f)
 #define swap(type, a, b)    { type __tmp = a; a = b; b = __tmp; }
 #define sqr(x)              ((x)*(x))
 
@@ -28,7 +30,7 @@
 #define GET(A, r, c)        getcomp(A, r, c)
 #define SET(A, r, c, value) setcomp(A, value, r, c)
 
-// golden ratio
+// golden ratio 0.5 * (1 + sqrt(5))
 #define GOLDEN_RATIO	(1.6180339887)
 
 // golden angle
