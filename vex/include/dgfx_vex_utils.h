@@ -512,13 +512,13 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
  *    in Primitive Wrangle
  *    dgfx_PolyCut2(0, @primnum, @P, "dist", cut_dist);
  */
-function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string attr_name; const float cut_value)
+function int[] dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string attr_name; const float cut_value)
 {
-    #define polycut_store(prim0, prim1, pt, cur_prim)	{ if (cur_prim == 0) { append(prim0, pt); } else { append(prim1, pt); } }
+    #define polycut_store(prim0, prim1, pt, cur_prim) { if (cur_prim == 0) { append(prim0, pt); } else { append(prim1, pt); } }
 
     int pts[] = primpoints(0, primnum);
     int num_poly = len(pts);
-    if (num_poly != 4 && num_poly != 3) { return; }
+    if (num_poly != 4 && num_poly != 3) { return array(); }
     int diag_pts[] = pts;
     int numpt = len(pts);
     // Dividing into two fragmented groups
@@ -567,12 +567,15 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
             polycut_store(prim0, prim1, cut_pt, cur_prim);
         }
     }
+    // cutting position not found
+    if (len(cut_pts) == 0) { return array(); }
     // Creating the primitives
     removeprim(geo, primnum, 0);
+    int prim_arr[];
     if (num_poly == 3)
     {
-        addprim(geo, "poly", prim0);
-        addprim(geo, "poly", prim1);
+        append(prim_arr, addprim(geo, "poly", prim0));
+        append(prim_arr, addprim(geo, "poly", prim1));
     }
     else if (len(cut_pts) == 4)
     {
@@ -591,8 +594,8 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
         // and add all 8 quads
         for (int i=0; i<4; ++i)
         {
-            addprim(geo, "poly", pts[i], cut_pts[i], mid_pts[(-1+i)%num_cut], cut_pts[(-1+i)%num_cut]);
-            addprim(geo, "poly", cut_pts[i], mid_pts[i], center_pt, mid_pts[(-1+i)%num_cut]);
+            append(prim_arr, addprim(geo, "poly", pts[i], cut_pts[i], mid_pts[(-1+i)%num_cut], cut_pts[(-1+i)%num_cut]));
+            append(prim_arr, addprim(geo, "poly", cut_pts[i], mid_pts[i], center_pt, mid_pts[(-1+i)%num_cut]));
         }
     }
     else if (len(prim0) == 3 || len(prim1) == 3)
@@ -612,9 +615,9 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
             int len_prim1 = len(prim1);
             int p1[] = dgfx_Array_Slice(prim1, f-4+1, f+1);
             int p2[] = dgfx_Array_Slice(prim1, f, f+4);
-            addprim(geo, "poly", p1); // quad1
-            addprim(geo, "poly", p2); // quad2
-            addprim(geo, "poly", prim0); // triangle
+            append(prim_arr, addprim(geo, "poly", p1)); // quad1
+            append(prim_arr, addprim(geo, "poly", p2)); // quad2
+            append(prim_arr, addprim(geo, "poly", prim0)); // triangle
         }
         else // If prim1 is a triangle
         {
@@ -625,16 +628,17 @@ function void dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string 
             int len_prim0 = len(prim0);
             int p1[] = dgfx_Array_Slice(prim0, f-4+1, f+1);
             int p2[] = dgfx_Array_Slice(prim0, f, f+4);
-            addprim(geo, "poly", p1); // quad1
-            addprim(geo, "poly", p2); // quad2
-            addprim(geo, "poly", prim1); // triangle
+            append(prim_arr, addprim(geo, "poly", p1)); // quad1
+            append(prim_arr, addprim(geo, "poly", p2)); // quad2
+            append(prim_arr, addprim(geo, "poly", prim1)); // triangle
         }
     }
     else
     {
-        addprim(geo, "poly", prim0);
-        addprim(geo, "poly", prim1);
+        append(prim_arr, addprim(geo, "poly", prim0));
+        append(prim_arr, addprim(geo, "poly", prim1));
     }
+    return prim_arr;
 }
 
 /**
