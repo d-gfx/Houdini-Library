@@ -26,7 +26,7 @@
 
 #define is_in_array(data, arr)  (0<=find(arr, data))
 
-#define pass_through(src, dst, row, col) setcomp(dst, getcomp(src, row, col), row, col)
+//#define pass_through(src, dst, row, col) setcomp(dst, getcomp(src, row, col), row, col)
 #define GET(A, r, c)        getcomp(A, r, c)
 #define SET(A, r, c, value) setcomp(A, value, r, c)
 
@@ -157,11 +157,13 @@ function vector[] dgfx_Array_Slice_Repeatable(const vector arr[]; const int star
 #define ArrayShuffle(type, inout_array, seed_01)\
 {\
     int size = len(inout_array);\
+    float seed = seed_01;\
     for (int i=size-1; 1<=i; --i)\
     {\
-        float rnd = rand(seed_01);\
+        float rnd = rand(seed);\
         int j = int(rint(rnd * i));\
         swap(type, inout_array[i], inout_array[j]);\
+        seed = rnd;\
     }\
 }
 
@@ -763,10 +765,7 @@ function void dgfx_Extract_Axes(vector axis_x, axis_y, axis_z; const matrix3 A)
  */
 function matrix dgfx_MakeMatrix4x4(const matrix3 m33; const vector t)
 {
-    matrix m;
-    pass_through(m33, m, 0, 0); pass_through(m33, m, 0, 1); pass_through(m33, m, 0, 2); setcomp(m, 0, 0, 3);
-    pass_through(m33, m, 1, 0); pass_through(m33, m, 1, 1); pass_through(m33, m, 1, 2); setcomp(m, 0, 1, 3);
-    pass_through(m33, m, 2, 0); pass_through(m33, m, 2, 1); pass_through(m33, m, 2, 2); setcomp(m, 0, 2, 3);
+    matrix m = m33;
     setcomp(m, t.x, 3, 0); setcomp(m, t.y, 3, 1); setcomp(m, t.z, 3, 2); setcomp(m, 1, 3, 3);
     return m;
 }
