@@ -249,6 +249,15 @@ function vector4 dgfx_Calc_Orient_Front_Side(const vector front, side)
 }
 
 /**
+ * Extract axis of rotation and angle from quaternion
+ */
+function void dgfx_Extract_Quat_Axis_Radian(export vector axis; export float rad; const vector4 quat)
+{
+    axis = normalize(set(quat.x, quat.y, quat.z));
+    rad = acos(quat.w) * 2;
+}
+
+/**
  * Create Axis Geometry (for Visualize)
  */
 function void dgfx_Create_Axis_Geomety(const float axis_len)
@@ -761,6 +770,27 @@ function void dgfx_Extract_Axes(vector axis_x, axis_y, axis_z; const matrix3 A)
 }
 
 /**
+ * Extract Axes
+ */
+function void dgfx_Extract_Axes_Trans(vector axis_x, axis_y, axis_z, t; const matrix A)
+{
+    float dummy_x, dummy_y, dummy_z, dummy_t;
+    assign(axis_x.x, axis_x.y, axis_x.z, dummy_x
+         , axis_y.x, axis_y.y, axis_y.z, dummy_y
+         , axis_z.x, axis_z.y, axis_z.z, dummy_z
+         , t.x, t.y, t.z, dummy_t
+         , A);
+}
+
+/**
+ * Extract Translate
+ */
+function vector dgfx_Extract_Trans(const matrix A)
+{
+    return set(getcomp(A, 3, 0), getcomp(A, 3, 1), getcomp(A, 3, 2));
+}
+
+/**
  * Make 4x4 Matrix
  */
 function matrix dgfx_MakeMatrix4x4(const matrix3 m33; const vector t)
@@ -855,4 +885,24 @@ function vector dgfx_Transform_Projection(const vector P; const matrix A, B)
     float w = proj_P.w;
     return set(proj_P.x/w, proj_P.y/w, proj_P.z/w);
 }
+
+/**
+ * To String Functions
+ */
+function string dgfx_To_String(const matrix3 mtx)
+{
+    return sprintf("%f, %f, %f\n%f, %f, %f\n%f, %f, %f\n"
+        , GET(mtx, 0, 0), GET(mtx, 0, 1), GET(mtx, 0, 2)
+        , GET(mtx, 1, 0), GET(mtx, 1, 1), GET(mtx, 1, 2)
+        , GET(mtx, 2, 0), GET(mtx, 2, 1), GET(mtx, 2, 2));
+}
+function string dgfx_To_String(const matrix mtx)
+{
+    return sprintf("%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f\n"
+        , GET(mtx, 0, 0), GET(mtx, 0, 1), GET(mtx, 0, 2), GET(mtx, 0, 3)
+        , GET(mtx, 1, 0), GET(mtx, 1, 1), GET(mtx, 1, 2), GET(mtx, 1, 3)
+        , GET(mtx, 2, 0), GET(mtx, 2, 1), GET(mtx, 2, 2), GET(mtx, 2, 3)
+        , GET(mtx, 3, 0), GET(mtx, 3, 1), GET(mtx, 3, 2), GET(mtx, 3, 3));
+}
+
 #endif // dgfx_vex_utils_h
