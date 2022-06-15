@@ -50,6 +50,34 @@ function int dgfx_Calc_Factorial(const int n)
 }
 
 /**
+ * Array : Remove duplicates
+ */
+#define DECLARE_STRUCT_ARRAY_REMOVE_DUPLICATES(type)\
+struct dgfx_ArrayRemoveDuplicates_##type\
+{\
+    type result[];\
+    int  num_duplicates[];\
+    type mode;\
+    void construct(const type array_a[])\
+    {\
+        foreach (type value; array_a)\
+        {\
+            if (find(result, value) < 0)\
+            {\
+                append(result, value);\
+                append(num_duplicates, len(find(array_a, value)));\
+            }\
+        }\
+        mode = result[find(num_duplicates, max(num_duplicates))];\
+    }\
+}
+
+// declare struct
+DECLARE_STRUCT_ARRAY_REMOVE_DUPLICATES(int)
+DECLARE_STRUCT_ARRAY_REMOVE_DUPLICATES(float)
+DECLARE_STRUCT_ARRAY_REMOVE_DUPLICATES(vector)
+
+/**
  * Array Condition
  */
 #define ArrayCondition(out_array, array_a, cond_func)\
