@@ -304,12 +304,13 @@ function void dgfx_Create_Axis_Geomety(const float axis_len)
 
 /**
  * Interpolation from Array
+ * value_func : clamp or repeat
  */
-#define INTERP_ARRAY(arr, value_01)\
+#define INTERP_ARRAY(arr, value_01, value_func)\
 {\
     int num_arr = len(arr);\
     float fract = 0;\
-    float value = clamp(value_01, 0, 1) * (num_arr - 1);\
+    float value = value_func(value_01, 0, 1) * (num_arr - 1);\
     int idx1 = floor(value);\
     int idx2 = clamp(idx1+1, 0, num_arr-1);\
     fract = frac(value);\
@@ -321,7 +322,7 @@ function void dgfx_Create_Axis_Geomety(const float axis_len)
  */
 function float dgfx_Interp_Array(const float arr[]; const float value_01)
 {
-    INTERP_ARRAY(arr, value_01);
+    INTERP_ARRAY(arr, value_01, clamp);
 }
 
 /**
@@ -329,7 +330,7 @@ function float dgfx_Interp_Array(const float arr[]; const float value_01)
  */
 function vector dgfx_Interp_Array(const vector arr[]; const float value_01)
 {
-    INTERP_ARRAY(arr, value_01);
+    INTERP_ARRAY(arr, value_01, clamp);
 }
 
 /**
@@ -338,7 +339,7 @@ function vector dgfx_Interp_Array(const vector arr[]; const float value_01)
 function vector dgfx_Calc_HeatMap_Color(float value_01)
 {
     vector colors[] = array({0,0,1}, {0,1,0}, {1,1,0}, {1,0,0}); // enable to add color table.
-    INTERP_ARRAY(colors, value_01);
+    INTERP_ARRAY(colors, value_01, clamp);
 }
 
 /**
