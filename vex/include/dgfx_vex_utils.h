@@ -544,6 +544,47 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
 }
 
 /**
+ * if Vertex is degeneracy, remove it
+ * how to use : in Vertex Wrangle
+ *  #include "dgfx_vex_utils.h"
+ *  int geo = 0, is_dbg = 0;
+ *  dgfx_Remove_Degeneracy_Vertex(geo, @vtxnum, @P, is_dbg);
+ */
+function void dgfx_Remove_Degeneracy_Vertex(const int geo, vtxnum; const vector P; const int is_dbg)
+{
+    int prim = vertexprim(geo, vtxnum);
+    int nvtx = primvertexcount(geo, prim);
+    // linear vertex number -> prim vertex index
+    int self_ivtx = vertexprimindex(geo, vtxnum);
+
+    int vtx_next = (self_ivtx + 1) % nvtx;
+    int vtx_prev = (self_ivtx - 1) % nvtx;
+    // convert linear vertex number
+    vtx_next = vertexindex(geo, prim, vtx_next);
+    vtx_prev = vertexindex(geo, prim, vtx_prev);
+
+    vector vtx_next_P = vertex(geo, "P", vtx_next);
+    vector vtx_prev_P = vertex(geo, "P", vtx_prev);
+    if (is_dbg)
+    {
+        setvertexattrib(geo, "vtx_num", prim, self_ivtx, vtxnum);
+        setvertexattrib(geo, "vtx_next", prim, self_ivtx, vtx_next);
+        setvertexattrib(geo, "vtx_prev", prim, self_ivtx, vtx_prev);
+    }
+
+    if ((ptlined(vtx_prev_P, P, vtx_next_P) < 0.0001)
+     || (ptlined(vtx_next_P, P, vtx_prev_P) < 0.0001))
+    {
+        if (is_dbg)
+        {
+            int pt = vertexpoint(geo, vtxnum);
+            printf("remove vtx[%d] : pt[%d], prim[%d]\n", vtxnum, pt, prim);
+        }
+        removevertex(geo, vtxnum);
+    }
+}
+
+/**
  * PolyCut 2.0
  *  restriction :
  *    triangles or quads only
@@ -552,7 +593,11 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
  *    in Primitive Wrangle
  *    dgfx_PolyCut2(0, @primnum, @P, "dist", cut_dist);
  */
-function int[] dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string attr_name; const float cut_value)
+function int[] dgfx_PolyCut2(int geo, primnum;
+    const vector prim_P;
+    const string attr_name;
+    const float cut_value;
+    const string cut_edge_group)
 {
     #define polycut_store(prim0, prim1, pt, cur_prim) { if (cur_prim == 0) { append(prim0, pt); } else { append(prim1, pt); } }
 
@@ -677,6 +722,16 @@ function int[] dgfx_PolyCut2(int geo, primnum; const vector prim_P; const string
     {
         append(prim_arr, addprim(geo, "poly", prim0));
         append(prim_arr, addprim(geo, "poly", prim1));
+    }
+    if (cut_edge_group != "")
+    {
+        int cut_pts_num = len(cut_pts);
+        for (int i=0; i<cut_pts_num-1; ++i)
+        {
+            int cut_pt1 = cut_pts[i];
+            int cut_pt2 = cut_pts[i+1];
+            setedgegroup(geo, cut_edge_group, cut_pt1, cut_pt2, 1);
+        }
     }
     return prim_arr;
 }
