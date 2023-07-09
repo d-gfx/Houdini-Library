@@ -415,13 +415,39 @@ function void dgfx_Calc_Circumscribed_Circle(float ret_r; vector ret_center, ret
  */
 function int dgfx_IsLooped_PrimVertex(int geometry, prim_num)
 {
-//  int is_closed = primintrinsic(geometry, "closed", prim_num); // this is whether open or closed prim
+    int is_closed = primintrinsic(geometry, "closed", prim_num); // this is whether open or closed prim
+    if (is_closed == 1) { return 1; } // closed prim is looped
+    // for polyline
     int num_vtx = primvertexcount(geometry, prim_num);
     int src_vtx_1st = primvertex(geometry, prim_num, 0);
     int src_vtx_end = primvertex(geometry, prim_num, num_vtx-1);
     int src_pt_1st = vertexpoint(geometry, src_vtx_1st);
     int src_pt_end = vertexpoint(geometry, src_vtx_end);
     return (src_pt_1st == src_pt_end);
+}
+
+/**
+ * Function to determine if Point P is on the edge of the specified Primitive
+ * how to use:
+ *   int is_on_edges = dgfx_Is_On_Primitive_Edges(0, @primnum, pt_P, 0.001);
+ */
+function int dgfx_Pos_Is_On_Primitive_Edges(const int geo, primnum; const vector P; const float eps)
+{
+    int prim_pts[] = primpoints(geo, primnum);
+    int npts = len(prim_pts);
+    int end = (dgfx_IsLooped_PrimVertex(geo, primnum) == 1) ? npts : npts - 1;
+    
+    for (int i=0; i<end; ++i)
+    {
+        vector edge_a = point(geo, "P", prim_pts[i]);
+        int next_pt = prim_pts[(i+1)%npts];
+        vector edge_b = point(geo, "P", next_pt);
+        if (ptlined(edge_a, edge_b, P) < eps)
+        {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 /**
@@ -540,47 +566,6 @@ function void dgfx_Append_Mid_Point_Edge_Array(vector pts[]; int src_geo, src_pr
                 //printf("04 : [%d - %d]rate = %f\n", pt_1, pt_2, rate);
             }
         }
-    }
-}
-
-/**
- * if Vertex is degeneracy, remove it
- * how to use : in Vertex Wrangle
- *  #include "dgfx_vex_utils.h"
- *  int geo = 0, is_dbg = 0;
- *  dgfx_Remove_Degeneracy_Vertex(geo, @vtxnum, @P, is_dbg);
- */
-function void dgfx_Remove_Degeneracy_Vertex(const int geo, vtxnum; const vector P; const int is_dbg)
-{
-    int prim = vertexprim(geo, vtxnum);
-    int nvtx = primvertexcount(geo, prim);
-    // linear vertex number -> prim vertex index
-    int self_ivtx = vertexprimindex(geo, vtxnum);
-
-    int vtx_next = (self_ivtx + 1) % nvtx;
-    int vtx_prev = (self_ivtx - 1) % nvtx;
-    // convert linear vertex number
-    vtx_next = vertexindex(geo, prim, vtx_next);
-    vtx_prev = vertexindex(geo, prim, vtx_prev);
-
-    vector vtx_next_P = vertex(geo, "P", vtx_next);
-    vector vtx_prev_P = vertex(geo, "P", vtx_prev);
-    if (is_dbg)
-    {
-        setvertexattrib(geo, "vtx_num", prim, self_ivtx, vtxnum);
-        setvertexattrib(geo, "vtx_next", prim, self_ivtx, vtx_next);
-        setvertexattrib(geo, "vtx_prev", prim, self_ivtx, vtx_prev);
-    }
-
-    if ((ptlined(vtx_prev_P, P, vtx_next_P) < 0.0001)
-     || (ptlined(vtx_next_P, P, vtx_prev_P) < 0.0001))
-    {
-        if (is_dbg)
-        {
-            int pt = vertexpoint(geo, vtxnum);
-            printf("remove vtx[%d] : pt[%d], prim[%d]\n", vtxnum, pt, prim);
-        }
-        removevertex(geo, vtxnum);
     }
 }
 
